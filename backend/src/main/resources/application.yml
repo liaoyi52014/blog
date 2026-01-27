@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: blog-backend
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:47.112.3.210}:5442/${DB_NAME:blog}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:123456}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+
+
+  ai:
+    model:
+      chat: openai
+      embedding: openai
+    openai:
+      api-key: ${OPENAI_API_KEY:AIzaSyCYStqVZKOgc90Lt7CXLGOuqeubror1SM8}
+      base-url: ${OPENAI_BASE_URL:https://generativelanguage.googleapis.com/v1beta/openai/}
+      chat:
+        options:
+          model: ${OPENAI_CHAT_MODEL:gemini-1.5-flash}
+          temperature: 0.2
+      embedding:
+        options:
+          model: ${OPENAI_EMBEDDING_MODEL:text-embedding-004}
+          # Keep this aligned with the Flyway schema vector(768).
+          dimensions: ${OPENAI_EMBEDDING_DIMENSIONS:768}
+  data:
+    redis:
+      host: ${REDIS_HOST:47.112.3.210}
+      port: 6379
+      username: root
+      password: 123456
+
+server:
+  port: ${SERVER_PORT:8080}
+
+app:
+  database:
+    auto-create: ${DB_AUTO_CREATE:true}
+    admin-database: ${DB_ADMIN_DATABASE:postgres}
