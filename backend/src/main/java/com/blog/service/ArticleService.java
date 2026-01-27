@@ -1,5 +1,6 @@
 package com.blog.service;
 
+import com.blog.model.dto.ArticleCreateRequest;
 import com.blog.model.entity.Article;
 import com.blog.repository.ArticleRepository;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,34 @@ public class ArticleService {
         if (article.getSummary() == null || article.getSummary().isBlank()) {
             article.setSummary(aiService.generateSummary(article.getContent()));
         }
+        return articleRepository.save(article);
+    }
+
+    @Transactional
+    public Article createManual(ArticleCreateRequest request) {
+        Article article = new Article();
+        article.setTitle(request.getTitle());
+        article.setContent(request.getContent());
+        article.setAuthor(request.getAuthor());
+        article.setCategory(request.getCategory());
+        article.setTags(request.getTags());
+        article.setSource("original");
+
+        if (request.getSummary() == null || request.getSummary().isBlank()) {
+            article.setSummary(aiService.generateSummary(request.getContent()));
+        } else {
+            article.setSummary(request.getSummary());
+        }
+
+        boolean publishNow = request.getPublish() == null || request.getPublish();
+        if (publishNow) {
+            article.setStatus("published");
+            article.setPublishedAt(LocalDateTime.now());
+        } else {
+            article.setStatus("draft");
+            article.setPublishedAt(null);
+        }
+
         return articleRepository.save(article);
     }
 

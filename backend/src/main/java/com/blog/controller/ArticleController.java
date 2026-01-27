@@ -1,8 +1,10 @@
 package com.blog.controller;
 
+import com.blog.model.dto.ArticleCreateRequest;
 import com.blog.model.entity.Article;
 import com.blog.service.ArticleService;
 import com.blog.util.ApiResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,6 +41,11 @@ public class ArticleController {
     @PostMapping
     public ApiResponse<Article> create(@RequestBody Article article) {
         return ApiResponse.success(articleService.create(article));
+    }
+
+    @PostMapping("/manual")
+    public ApiResponse<Article> createManual(@Valid @RequestBody ArticleCreateRequest request) {
+        return ApiResponse.success(articleService.createManual(request));
     }
 
     @PutMapping("/{id}")

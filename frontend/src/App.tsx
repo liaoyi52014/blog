@@ -4,6 +4,7 @@ import { Link, Route, Routes, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import SearchPage from './pages/SearchPage';
 import ImportPage from './pages/ImportPage';
+import CreateArticlePage from './pages/CreateArticlePage';
 
 const { Header, Content, Footer } = Layout;
 
@@ -23,7 +24,8 @@ const App: React.FC = () => {
 
   const selectedKey =
     location.pathname.startsWith('/search') ? '/search' :
-    location.pathname.startsWith('/import') ? '/import' : '/';
+    location.pathname.startsWith('/import') ? '/import' :
+    location.pathname.startsWith('/create') ? '/create' : '/';
 
   useEffect(() => {
     const root = document.documentElement;
@@ -189,7 +191,8 @@ const App: React.FC = () => {
             items={[
               { key: '/', label: <Link to="/">首页</Link> },
               { key: '/search', label: <Link to="/search">知识检索</Link> },
-              { key: '/import', label: <Link to="/import">文档导入</Link> }
+              { key: '/import', label: <Link to="/import">文档导入</Link> },
+              { key: '/create', label: <Link to="/create">创建博客</Link> }
             ]}
           />
         </Header>
@@ -198,6 +201,7 @@ const App: React.FC = () => {
             <Route path="/" element={<Home />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/import" element={<ImportPage />} />
+            <Route path="/create" element={<CreateArticlePage />} />
           </Routes>
         </Content>
         <Footer className="app-footer">
