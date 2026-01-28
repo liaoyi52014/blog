@@ -7,9 +7,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 AI-powered personal tech blog platform with knowledge management, intelligent search, and content summarization capabilities. The system supports multi-format document import, uses vector database for semantic search, and leverages LLM for intelligent content summarization.
 
 **Tech Stack:**
-- Backend: Java 17 + Spring Boot 3.x + Spring AI Alibaba
+- Backend: Java 17 + Spring Boot 3.3.x + Spring AI (OpenAI Compatible Mode)
 - Frontend: React 18+ + TypeScript + Ant Design
-- AI Models: Gemini 3.0 (text generation), gemini-embedding-001 (embeddings)
+- AI Models: Qwen/Qwen3-8B (chat), BAAI/bge-large-zh-v1.5 (embeddings) via SiliconFlow
 - Database: PostgreSQL 15+ with pgvector extension
 - Cache: Redis
 - Document Parsing: Apache POI (Word), Apache PDFBox (PDF), CommonMark (Markdown)
@@ -131,13 +131,15 @@ search_similar_knowledge(query_embedding, match_threshold, match_count)
 ### Configuration
 
 **Required Environment Variables:**
-- `GEMINI_API_KEY`: Google Gemini API key
+- `OPENAI_API_KEY`: SiliconFlow API key
+- `OPENAI_BASE_URL`: `https://api.siliconflow.cn/v1` (default)
 - `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`: PostgreSQL connection
 - `REDIS_HOST`, `REDIS_PASSWORD`: Redis connection
 
 **Spring AI Configuration:**
-- ChatClient configured for Gemini 3.0
-- EmbeddingClient configured for gemini-embedding-001
+- Uses `spring-ai-starter-model-openai` pointing to SiliconFlow's OpenAI-compatible endpoint.
+- Chat Model: `Qwen/Qwen3-8B`
+- Embedding Model: `BAAI/bge-large-zh-v1.5`
 
 ### Document Parsing
 

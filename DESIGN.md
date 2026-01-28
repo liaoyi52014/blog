@@ -276,23 +276,40 @@ src/main/java/com/blog/
         <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
 
-    <!-- Spring AI Alibaba -->
+    <!-- Spring AI (OpenAI Model) -->
     <dependency>
-        <groupId>com.alibaba.cloud.ai</groupId>
-        <artifactId>spring-ai-alibaba-starter</artifactId>
-        <version>1.0.0-M2</version>
+        <groupId>org.springframework.ai</groupId>
+        <artifactId>spring-ai-starter-model-openai</artifactId>
     </dependency>
 
     <!-- PostgreSQL -->
     <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
+        <scope>runtime</scope>
+    </dependency>
+
+    <!-- pgvector JDBC support -->
+    <dependency>
+        <groupId>com.pgvector</groupId>
+        <artifactId>pgvector</artifactId>
+        <version>0.1.6</version>
     </dependency>
 
     <!-- Spring Data JPA -->
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+
+    <!-- Flyway for relational schema migrations -->
+    <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-core</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-database-postgresql</artifactId>
     </dependency>
 
     <!-- Redis -->
@@ -343,25 +360,10 @@ src/main/java/com/blog/
 @Configuration
 public class SpringAIConfig {
 
-    @Value("${gemini.api.key}")
-    private String geminiApiKey;
-
     @Bean
-    public ChatClient chatClient() {
-        // 配置Gemini 3.0文本生成模型
-        return ChatClient.builder()
-            .model("gemini-3.0-pro")
-            .apiKey(geminiApiKey)
-            .build();
-    }
-
-    @Bean
-    public EmbeddingClient embeddingClient() {
-        // 配置Gemini Embedding模型
-        return EmbeddingClient.builder()
-            .model("gemini-embedding-001")
-            .apiKey(geminiApiKey)
-            .build();
+    @ConditionalOnBean(ChatModel.class)
+    public ChatClient.Builder chatClientBuilder(ChatModel chatModel) {
+        return ChatClient.builder(chatModel);
     }
 }
 ```
@@ -631,8 +633,10 @@ public class MarkdownParser {
 #### 4.5.1 文章相关API
 ```
 GET    /api/articles              # 获取文章列表
+GET    /api/articles/published    # 获取已发布文章列表
 GET    /api/articles/{id}         # 获取文章详情
-POST   /api/articles              # 创建文章
+POST   /api/articles              # 创建文章 (Auto Summary)
+POST   /api/articles/manual       # 手动创建文章
 PUT    /api/articles/{id}         # 更新文章
 DELETE /api/articles/{id}         # 删除文章
 POST   /api/articles/{id}/publish # 发布文章
@@ -726,9 +730,7 @@ src/
 │   │   ├── Footer.tsx
 │   │   └── Loading.tsx
 │   ├── article/        # 文章组件
-│   │   ├── ArticleList.tsx
-│   │   ├── ArticleCard.tsx
-│   │   └── ArticleDetail.tsx
+│   │   └── ArticleCard.tsx
 │   ├── search/         # 搜索组件
 │   │   ├── SearchBar.tsx
 │   │   ├── SearchResults.tsx
@@ -738,9 +740,8 @@ src/
 │       └── ImportHistory.tsx
 ├── pages/              # 页面
 │   ├── Home.tsx
-│   ├── ArticlePage.tsx
+│   ├── CreateArticlePage.tsx
 │   ├── SearchPage.tsx
-│   ├── KnowledgePage.tsx
 │   └── ImportPage.tsx
 ├── services/           # API服务
 │   ├── articleService.ts

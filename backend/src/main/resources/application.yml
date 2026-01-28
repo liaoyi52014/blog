@@ -28,17 +28,19 @@ spring:
       chat: openai
       embedding: openai
     openai:
-      api-key: ${OPENAI_API_KEY:AIzaSyCYStqVZKOgc90Lt7CXLGOuqeubror1SM8}
-      base-url: ${OPENAI_BASE_URL:https://generativelanguage.googleapis.com/v1beta/openai/}
+      api-key: ${OPENAI_API_KEY:sk-delncxvjhrcgiyxbnkgvaiutkcigulkzydetopczksoqnqpm}
+      base-url: ${OPENAI_BASE_URL:https://api.siliconflow.cn/v1}
       chat:
         options:
-          model: ${OPENAI_CHAT_MODEL:gemini-1.5-flash}
+          model: ${OPENAI_CHAT_MODEL:Qwen/Qwen3-8B}
           temperature: 0.2
       embedding:
+        api-key: ${OPENAI_API_KEY:sk-delncxvjhrcgiyxbnkgvaiutkcigulkzydetopczksoqnqpm}
+        base-url: ${OPENAI_EMBEDDING_BASE_URL:https://api.siliconflow.cn/v1}
         options:
-          model: ${OPENAI_EMBEDDING_MODEL:text-embedding-004}
+          model: ${OPENAI_EMBEDDING_MODEL:BAAI/bge-large-zh-v1.5}
           # Keep this aligned with the Flyway schema vector(768).
-          dimensions: ${OPENAI_EMBEDDING_DIMENSIONS:768}
+          dimensions: ${OPENAI_EMBEDDING_DIMENSIONS:1024}
   data:
     redis:
       host: ${REDIS_HOST:47.112.3.210}
