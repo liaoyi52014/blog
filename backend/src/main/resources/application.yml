@@ -29,18 +29,18 @@ spring:
       embedding: openai
     openai:
       api-key: ${OPENAI_API_KEY:sk-delncxvjhrcgiyxbnkgvaiutkcigulkzydetopczksoqnqpm}
-      base-url: ${OPENAI_BASE_URL:https://api.siliconflow.cn/v1}
+      base-url: ${OPENAI_BASE_URL:https://api.siliconflow.cn}
       chat:
         options:
           model: ${OPENAI_CHAT_MODEL:Qwen/Qwen3-8B}
           temperature: 0.2
       embedding:
         api-key: ${OPENAI_API_KEY:sk-delncxvjhrcgiyxbnkgvaiutkcigulkzydetopczksoqnqpm}
-        base-url: ${OPENAI_EMBEDDING_BASE_URL:https://api.siliconflow.cn/v1}
+        base-url: ${OPENAI_EMBEDDING_BASE_URL:https://api.siliconflow.cn}
         options:
           model: ${OPENAI_EMBEDDING_MODEL:BAAI/bge-large-zh-v1.5}
-          # Keep this aligned with the Flyway schema vector(768).
-          dimensions: ${OPENAI_EMBEDDING_DIMENSIONS:1024}
+          # Note: dimensions is ONLY supported for Qwen3-Embedding models
+          # BAAI/bge-large-zh-v1.5 outputs 1024 dimensions natively
   data:
     redis:
       host: ${REDIS_HOST:47.112.3.210}
@@ -51,7 +51,19 @@ spring:
 server:
   port: ${SERVER_PORT:8080}
 
+logging:
+  level:
+    org.springframework.ai: DEBUG
+    org.springframework.web.client: DEBUG
+    org.springframework.http.client: DEBUG
+    org.apache.http: DEBUG
+    reactor.netty.http.client: DEBUG
+
 app:
   database:
     auto-create: ${DB_AUTO_CREATE:true}
     admin-database: ${DB_ADMIN_DATABASE:postgres}
+
+rss:
+  feeds:
+    file: ${RSS_FEEDS_FILE:}

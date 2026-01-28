@@ -111,12 +111,14 @@ const ImportPage: React.FC = () => {
 
       <Card className="glass-card" title="导入记录">
         <Table
+          className="import-records-table"
           dataSource={records}
           columns={columns}
           rowKey="id"
           pagination={{ pageSize: 8 }}
         />
       </Card>
+
     </div>
   );
 };

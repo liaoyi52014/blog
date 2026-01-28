@@ -28,13 +28,12 @@ public class ImportService {
     private final ImportRecordRepository importRecordRepository;
 
     public ImportService(
-        WordParser wordParser,
-        PDFParser pdfParser,
-        MarkdownParser markdownParser,
-        AIService aiService,
-        KnowledgeRepository knowledgeRepository,
-        ImportRecordRepository importRecordRepository
-    ) {
+            WordParser wordParser,
+            PDFParser pdfParser,
+            MarkdownParser markdownParser,
+            AIService aiService,
+            KnowledgeRepository knowledgeRepository,
+            ImportRecordRepository importRecordRepository) {
         this.wordParser = wordParser;
         this.pdfParser = pdfParser;
         this.markdownParser = markdownParser;
@@ -72,16 +71,21 @@ public class ImportService {
                 String chunk = chunks.get(i);
                 float[] embedding = aiService.generateEmbedding(chunk);
 
-                KnowledgeBase kb = new KnowledgeBase();
-                kb.setTitle(filename);
-                kb.setContent(content);
-                kb.setChunkContent(chunk);
-                kb.setChunkIndex(i);
-                kb.setParentId(record.getId());
-                kb.setEmbedding(embedding);
-                kb.setSourceType(fileType);
+                // Convert float[] to PostgreSQL vector text format
+                String embeddingStr = convertToVectorString(embedding);
 
-                knowledgeRepository.save(kb);
+                // Use native insert to properly cast the embedding to vector type
+                knowledgeRepository.insertWithVector(
+                        filename, // title
+                        content, // content
+                        chunk, // chunkContent
+                        i, // chunkIndex
+                        record.getId(), // parentId
+                        embeddingStr, // embedding (will be cast to vector)
+                        null, // metadata
+                        fileType, // sourceType
+                        null // sourceUrl
+                );
             }
 
             record.setChunksCount(chunks.size());
@@ -128,5 +132,23 @@ public class ImportService {
             return "markdown";
         }
         throw new IllegalArgumentException("Unsupported file type: " + filename);
+    }
+
+    /**
+     * Convert float[] embedding to PostgreSQL vector text format "[0.1,0.2,...]"
+     */
+    private String convertToVectorString(float[] embedding) {
+        if (embedding == null || embedding.length == 0) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < embedding.length; i++) {
+            if (i > 0) {
+                sb.append(',');
+            }
+            sb.append(embedding[i]);
+        }
+        sb.append(']');
+        return sb.toString();
     }
 }

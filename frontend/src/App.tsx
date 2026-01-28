@@ -4,6 +4,8 @@ import { Link, Route, Routes, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import SearchPage from './pages/SearchPage';
 import ImportPage from './pages/ImportPage';
+import RssImportPage from './pages/RssImportPage';
+import ChatPage from './pages/ChatPage';
 import CreateArticlePage from './pages/CreateArticlePage';
 
 const { Header, Content, Footer } = Layout;
@@ -25,6 +27,8 @@ const App: React.FC = () => {
   const selectedKey =
     location.pathname.startsWith('/search') ? '/search' :
     location.pathname.startsWith('/import') ? '/import' :
+    location.pathname.startsWith('/rss') ? '/rss' :
+    location.pathname.startsWith('/chat') ? '/chat' :
     location.pathname.startsWith('/create') ? '/create' : '/';
 
   useEffect(() => {
@@ -192,6 +196,8 @@ const App: React.FC = () => {
               { key: '/', label: <Link to="/">首页</Link> },
               { key: '/search', label: <Link to="/search">知识检索</Link> },
               { key: '/import', label: <Link to="/import">文档导入</Link> },
+              { key: '/rss', label: <Link to="/rss">RSS导入</Link> },
+              { key: '/chat', label: <Link to="/chat">知识对话</Link> },
               { key: '/create', label: <Link to="/create">创建博客</Link> }
             ]}
           />
@@ -201,6 +207,8 @@ const App: React.FC = () => {
             <Route path="/" element={<Home />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/import" element={<ImportPage />} />
+            <Route path="/rss" element={<RssImportPage />} />
+            <Route path="/chat" element={<ChatPage />} />
             <Route path="/create" element={<CreateArticlePage />} />
           </Routes>
         </Content>

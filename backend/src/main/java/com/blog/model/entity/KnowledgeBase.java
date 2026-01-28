@@ -33,7 +33,7 @@ public class KnowledgeBase {
      * This keeps the entity simple while still matching the pgvector column type.
      */
     @Convert(converter = VectorStringConverter.class)
-    @Column(name = "embedding", columnDefinition = "vector(768)")
+    @Column(name = "embedding", columnDefinition = "vector(1024)")
     private float[] embedding;
 
     @Column(name = "metadata", columnDefinition = "jsonb")
