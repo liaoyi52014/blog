@@ -116,14 +116,22 @@ public class AIService {
 
         if (chatClient != null) {
             try {
+                // Include current date to help AI focus on latest information
+                java.time.LocalDateTime now = java.time.LocalDateTime.now();
+                java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter
+                        .ofPattern("yyyy年MM月dd日 HH:mm");
+                String currentTime = now.format(formatter);
+
                 String systemPrompt = """
-                        你是一个专业的新闻研究助手。根据用户的查询，提供最新的相关新闻和资讯摘要。
+                        你是一个专业的新闻研究助手。当前时间是：%s
+
+                        根据用户的查询，提供最新的相关新闻和资讯摘要。请特别关注最新发生的事件。
 
                         请按以下格式回复：
 
-                        ## 📰 相关新闻摘要
+                        ## 📰 相关新闻摘要（截至 %s）
 
-                        [根据你的知识，总结与该话题相关的最新动态和重要信息，大约200-300字]
+                        [根据你的知识，总结与该话题相关的最新动态和重要信息，大约200-300字。重点关注最近发生的事件]
 
                         ## 🔗 建议查看的来源
 
@@ -136,12 +144,12 @@ public class AIService {
                         - 要点2
                         - 要点3
 
-                        注意：如果是时效性很强的话题，请提醒用户查看最新的新闻源获取实时更新。
-                        """;
+                        ⚠️ **时效性提醒**：以上信息基于AI知识库，可能不是最新实时数据。如需获取最新动态，请访问上述新闻源查看实时更新。
+                        """.formatted(currentTime, currentTime);
 
                 return chatClient.prompt()
                         .system(systemPrompt)
-                        .user("请搜索并总结关于以下话题的最新新闻和资讯：" + query)
+                        .user("请搜索并总结关于以下话题的最新新闻和资讯（特别关注最近发生的事件）：" + query)
                         .call()
                         .content();
             } catch (Exception ex) {
