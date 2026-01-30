@@ -23,20 +23,18 @@ public class SearchController {
     @PostMapping("/vector")
     public ApiResponse<Map<String, Object>> vectorSearch(@Valid @RequestBody SearchRequest request) {
         List<KnowledgeVO> results = searchService.vectorSearch(
-            request.getQuery(),
-            request.getLimit(),
-            request.getThreshold()
-        );
+                request.getQuery(),
+                request.getLimit(),
+                request.getThreshold());
         return ApiResponse.success(Map.of("results", results, "total", results.size()));
     }
 
     @PostMapping("/hybrid")
     public ApiResponse<Map<String, Object>> hybridSearch(@Valid @RequestBody SearchRequest request) {
         List<KnowledgeVO> results = searchService.hybridSearch(
-            request.getQuery(),
-            request.getLimit(),
-            request.getThreshold()
-        );
+                request.getQuery(),
+                request.getLimit(),
+                request.getThreshold());
         return ApiResponse.success(Map.of("results", results, "total", results.size()));
     }
 
@@ -44,5 +42,30 @@ public class SearchController {
     public ApiResponse<Map<String, Object>> webSearch(@Valid @RequestBody SearchRequest request) {
         String summary = searchService.webSearch(request.getQuery());
         return ApiResponse.success(Map.of("summary", summary));
+    }
+
+    @PostMapping("/unified")
+    public ApiResponse<Map<String, Object>> unifiedSearch(@Valid @RequestBody SearchRequest request) {
+        // First try hybrid search on local knowledge base
+        List<KnowledgeVO> localResults = searchService.hybridSearch(
+                request.getQuery(),
+                request.getLimit(),
+                request.getThreshold());
+
+        if (!localResults.isEmpty()) {
+            // Return local results
+            return ApiResponse.success(Map.of(
+                    "results", localResults,
+                    "total", localResults.size(),
+                    "source", "local"));
+        }
+
+        // Fallback to web search
+        String webSummary = searchService.webSearch(request.getQuery());
+        return ApiResponse.success(Map.of(
+                "results", List.of(),
+                "total", 0,
+                "source", "web",
+                "summary", webSummary));
     }
 }

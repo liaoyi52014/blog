@@ -99,7 +99,7 @@ const ImportPage: React.FC = () => {
           支持格式：Word (.doc, .docx) / PDF (.pdf) / Markdown (.md)
         </div>
 
-        <div style={{ marginTop: 10, color: '#aab4d6' }}>
+        <div style={{ marginTop: 10, color: 'var(--text-muted)' }}>
           <FileWordOutlined />
           <FilePdfOutlined style={{ marginLeft: 10 }} />
           <FileMarkdownOutlined style={{ marginLeft: 10 }} />

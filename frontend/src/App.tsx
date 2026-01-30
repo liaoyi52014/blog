@@ -75,9 +75,9 @@ const App: React.FC = () => {
     let rafId = 0;
 
     const colors = [
-      '124,92,255',
-      '106,169,255',
-      '61,240,255'
+      '102,126,234',
+      '167,139,250',
+      '129,140,248'
     ];
 
     const resize = () => {
@@ -145,29 +145,30 @@ const App: React.FC = () => {
       theme={{
         algorithm: [darkAlgorithm, defaultAlgorithm],
         token: {
-          colorPrimary: '#7c5cff',
-          colorInfo: '#6aa9ff',
-          borderRadius: 14,
+          colorPrimary: '#667eea',
+          colorInfo: '#a78bfa',
+          borderRadius: 12,
           wireframe: false,
-          fontSize: 15
+          fontSize: 15,
+          fontFamily: '"Inter", "SF Pro Display", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif'
         },
         components: {
           Layout: {
-            headerBg: 'rgba(6, 12, 36, 0.72)',
+            headerBg: 'rgba(10, 14, 23, 0.85)',
             bodyBg: 'transparent',
             footerBg: 'transparent'
           },
           Menu: {
             darkItemBg: 'transparent',
-            darkItemSelectedBg: 'rgba(120, 140, 255, 0.12)',
-            darkItemSelectedColor: '#ffffff',
-            darkItemColor: '#9aa6d1'
+            darkItemSelectedBg: 'rgba(102, 126, 234, 0.15)',
+            darkItemSelectedColor: '#f8fafc',
+            darkItemColor: '#64748b'
           },
           Card: {
-            borderRadiusLG: 16
+            borderRadiusLG: 20
           },
           Tabs: {
-            inkBarColor: '#6aa9ff'
+            inkBarColor: '#667eea'
           }
         }
       }}
