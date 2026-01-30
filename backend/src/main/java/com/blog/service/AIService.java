@@ -18,7 +18,7 @@ import java.util.Random;
 public class AIService {
 
     private static final Logger log = LoggerFactory.getLogger(AIService.class);
-    private static final int EMBEDDING_DIMENSION = 768;
+    private static final int EMBEDDING_DIMENSION = 1024;
     private static final int MAX_CONTEXT_CHARS = 4000;
     private static final int MAX_SNIPPET_CHARS = 480;
 
