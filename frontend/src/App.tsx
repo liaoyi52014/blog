@@ -26,10 +26,10 @@ const App: React.FC = () => {
 
   const selectedKey =
     location.pathname.startsWith('/search') ? '/search' :
-    location.pathname.startsWith('/import') ? '/import' :
-    location.pathname.startsWith('/rss') ? '/rss' :
-    location.pathname.startsWith('/chat') ? '/chat' :
-    location.pathname.startsWith('/create') ? '/create' : '/';
+      location.pathname.startsWith('/import') ? '/import' :
+        location.pathname.startsWith('/rss') ? '/rss' :
+          location.pathname.startsWith('/chat') ? '/chat' :
+            location.pathname.startsWith('/create') ? '/create' : '/';
 
   useEffect(() => {
     const root = document.documentElement;
@@ -75,9 +75,9 @@ const App: React.FC = () => {
     let rafId = 0;
 
     const colors = [
-      '102,126,234',
-      '167,139,250',
-      '129,140,248'
+      '0,201,167',
+      '54,168,255',
+      '0,229,196'
     ];
 
     const resize = () => {
@@ -145,30 +145,30 @@ const App: React.FC = () => {
       theme={{
         algorithm: [darkAlgorithm, defaultAlgorithm],
         token: {
-          colorPrimary: '#667eea',
-          colorInfo: '#a78bfa',
+          colorPrimary: '#00C9A7',
+          colorInfo: '#36A8FF',
           borderRadius: 12,
           wireframe: false,
           fontSize: 15,
-          fontFamily: '"Inter", "SF Pro Display", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif'
+          fontFamily: '"DM Sans", "SF Pro Display", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif'
         },
         components: {
           Layout: {
-            headerBg: 'rgba(10, 14, 23, 0.85)',
+            headerBg: 'rgba(5, 10, 14, 0.88)',
             bodyBg: 'transparent',
             footerBg: 'transparent'
           },
           Menu: {
             darkItemBg: 'transparent',
-            darkItemSelectedBg: 'rgba(102, 126, 234, 0.15)',
-            darkItemSelectedColor: '#f8fafc',
-            darkItemColor: '#64748b'
+            darkItemSelectedBg: 'rgba(0, 201, 167, 0.15)',
+            darkItemSelectedColor: '#f0f8ff',
+            darkItemColor: '#5a7a8c'
           },
           Card: {
             borderRadiusLG: 20
           },
           Tabs: {
-            inkBarColor: '#667eea'
+            inkBarColor: '#00C9A7'
           }
         }
       }}

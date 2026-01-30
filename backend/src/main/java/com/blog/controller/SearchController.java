@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/search")
@@ -46,26 +47,42 @@ public class SearchController {
 
     @PostMapping("/unified")
     public ApiResponse<Map<String, Object>> unifiedSearch(@Valid @RequestBody SearchRequest request) {
-        // First try hybrid search on local knowledge base
-        List<KnowledgeVO> localResults = searchService.hybridSearch(
-                request.getQuery(),
-                request.getLimit(),
-                request.getThreshold());
+        // Run local search and web search in parallel for better performance
+        CompletableFuture<List<KnowledgeVO>> localFuture = CompletableFuture
+                .supplyAsync(() -> searchService.hybridSearch(
+                        request.getQuery(),
+                        request.getLimit(),
+                        request.getThreshold()));
 
-        if (!localResults.isEmpty()) {
-            // Return local results
+        CompletableFuture<String> webFuture = CompletableFuture
+                .supplyAsync(() -> searchService.webSearchWithNews(request.getQuery()));
+
+        // Wait for both to complete
+        List<KnowledgeVO> localResults = localFuture.join();
+        String webSummary = webFuture.join();
+
+        // Always return both local results and web summary
+        // Frontend can display both sections
+        if (!localResults.isEmpty() && (webSummary == null || webSummary.isBlank())) {
             return ApiResponse.success(Map.of(
                     "results", localResults,
                     "total", localResults.size(),
                     "source", "local"));
         }
 
-        // Fallback to web search
-        String webSummary = searchService.webSearch(request.getQuery());
+        if (localResults.isEmpty() && webSummary != null && !webSummary.isBlank()) {
+            return ApiResponse.success(Map.of(
+                    "results", List.of(),
+                    "total", 0,
+                    "source", "web",
+                    "summary", webSummary));
+        }
+
+        // Both have results - return combined
         return ApiResponse.success(Map.of(
-                "results", List.of(),
-                "total", 0,
-                "source", "web",
-                "summary", webSummary));
+                "results", localResults,
+                "total", localResults.size(),
+                "source", "combined",
+                "summary", webSummary != null ? webSummary : ""));
     }
 }

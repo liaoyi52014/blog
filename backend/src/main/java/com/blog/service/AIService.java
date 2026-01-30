@@ -26,9 +26,8 @@ public class AIService {
     private final EmbeddingModel embeddingModel;
 
     public AIService(
-        ObjectProvider<ChatClient.Builder> chatClientBuilderProvider,
-        ObjectProvider<EmbeddingModel> embeddingModelProvider
-    ) {
+            ObjectProvider<ChatClient.Builder> chatClientBuilderProvider,
+            ObjectProvider<EmbeddingModel> embeddingModelProvider) {
         ChatClient.Builder builder = chatClientBuilderProvider.getIfAvailable();
         this.chatClient = builder != null ? builder.build() : null;
         this.embeddingModel = embeddingModelProvider.getIfAvailable();
@@ -52,10 +51,10 @@ public class AIService {
         if (chatClient != null) {
             try {
                 return chatClient.prompt()
-                    .system("You are a precise technical editor. Summarize the input in under 200 Chinese characters.")
-                    .user(content)
-                    .call()
-                    .content();
+                        .system("You are a precise technical editor. Summarize the input in under 200 Chinese characters.")
+                        .user(content)
+                        .call()
+                        .content();
             } catch (Exception ex) {
                 log.warn("ChatClient summary failed, falling back to local summary: {}", ex.getMessage());
             }
@@ -94,16 +93,64 @@ public class AIService {
         if (chatClient != null) {
             try {
                 return chatClient.prompt()
-                    .system("You are a research assistant. Provide a short, direct summary of what to look for.")
-                    .user("Summarize the key research directions for: " + query)
-                    .call()
-                    .content();
+                        .system("You are a research assistant. Provide a short, direct summary of what to look for.")
+                        .user("Summarize the key research directions for: " + query)
+                        .call()
+                        .content();
             } catch (Exception ex) {
                 log.warn("ChatClient web summary failed, falling back: {}", ex.getMessage());
             }
         }
 
         return "Web search is not yet wired. Query: " + query;
+    }
+
+    /**
+     * Search for news and provide a summary with source attribution.
+     * Uses AI to generate a comprehensive news summary based on the query.
+     */
+    public String searchNewsWithSources(String query) {
+        if (query == null || query.isBlank()) {
+            return "";
+        }
+
+        if (chatClient != null) {
+            try {
+                String systemPrompt = """
+                        你是一个专业的新闻研究助手。根据用户的查询，提供最新的相关新闻和资讯摘要。
+
+                        请按以下格式回复：
+
+                        ## 📰 相关新闻摘要
+
+                        [根据你的知识，总结与该话题相关的最新动态和重要信息，大约200-300字]
+
+                        ## 🔗 建议查看的来源
+
+                        - 可以访问的权威新闻网站或信息源（如路透社、新华社、BBC等）
+                        - 相关的专业网站或平台
+
+                        ## 💡 关键要点
+
+                        - 要点1
+                        - 要点2
+                        - 要点3
+
+                        注意：如果是时效性很强的话题，请提醒用户查看最新的新闻源获取实时更新。
+                        """;
+
+                return chatClient.prompt()
+                        .system(systemPrompt)
+                        .user("请搜索并总结关于以下话题的最新新闻和资讯：" + query)
+                        .call()
+                        .content();
+            } catch (Exception ex) {
+                log.warn("ChatClient news search failed, falling back: {}", ex.getMessage());
+            }
+        }
+
+        return "## 📰 新闻搜索\n\n当前暂未配置AI服务，无法提供新闻摘要。\n\n**查询内容**: " + query
+                + "\n\n**建议**: 请访问以下新闻网站获取最新信息：\n- 新华网: https://www.xinhuanet.com\n- 路透社: https://www.reuters.com\n- BBC中文: https://www.bbc.com/zhongwen";
     }
 
     public String generateKnowledgeAnswer(String question, List<KnowledgeVO> sources) {
@@ -115,14 +162,13 @@ public class AIService {
         if (chatClient != null) {
             try {
                 return chatClient.prompt()
-                    .system(
-                        "You are a helpful assistant. Answer the question using the provided knowledge base snippets. "
-                            + "If the answer is not in the snippets, say you do not know. "
-                            + "Keep the answer concise and in Chinese."
-                    )
-                    .user("问题：" + question + "\n\n知识库片段：\n" + context)
-                    .call()
-                    .content();
+                        .system(
+                                "You are a helpful assistant. Answer the question using the provided knowledge base snippets. "
+                                        + "If the answer is not in the snippets, say you do not know. "
+                                        + "Keep the answer concise and in Chinese.")
+                        .user("问题：" + question + "\n\n知识库片段：\n" + context)
+                        .call()
+                        .content();
             } catch (Exception ex) {
                 log.warn("ChatClient knowledge answer failed, falling back: {}", ex.getMessage());
             }

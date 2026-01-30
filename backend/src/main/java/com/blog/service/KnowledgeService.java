@@ -2,6 +2,7 @@ package com.blog.service;
 
 import com.blog.model.entity.KnowledgeBase;
 import com.blog.repository.KnowledgeRepository;
+import com.blog.util.TextChunker;
 import com.blog.util.VectorUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,21 +31,32 @@ public class KnowledgeService {
 
     @Transactional
     public void createFromExternal(String title, String content, String sourceUrl) {
-        // Generate embedding for the content
-        float[] embedding = aiService.generateEmbedding(content);
-        String embeddingText = VectorUtil.toVectorString(embedding);
+        // Split content into chunks for better vector search
+        List<String> chunks = TextChunker.split(content, 500);
 
-        // Insert using native query to handle vector type
-        knowledgeRepository.insertWithVector(
-                title,
-                content,
-                content, // chunkContent = content for external sources
-                0, // chunkIndex
-                null, // parentId
-                embeddingText,
-                null, // metadata
-                "external", // sourceType
-                sourceUrl);
+        // If content is very short, use the whole content as a single chunk
+        if (chunks.isEmpty()) {
+            chunks = List.of(content);
+        }
+
+        // Create an embedding for each chunk
+        for (int i = 0; i < chunks.size(); i++) {
+            String chunk = chunks.get(i);
+            float[] embedding = aiService.generateEmbedding(chunk);
+            String embeddingText = VectorUtil.toVectorString(embedding);
+
+            // Insert using native query to handle vector type
+            knowledgeRepository.insertWithVector(
+                    title,
+                    content, // full content
+                    chunk, // chunk content for vector search
+                    i, // chunkIndex
+                    null, // parentId
+                    embeddingText,
+                    null, // metadata
+                    "external", // sourceType
+                    sourceUrl);
+        }
     }
 
     @Transactional

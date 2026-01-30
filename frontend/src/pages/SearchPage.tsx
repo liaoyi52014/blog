@@ -17,7 +17,7 @@ type SearchResult = {
 type UnifiedSearchData = {
   results?: SearchResult[];
   total?: number;
-  source?: 'local' | 'web';
+  source?: 'local' | 'web' | 'combined';
   summary?: string;
 };
 
@@ -31,7 +31,7 @@ const SearchPage: React.FC = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [webSummary, setWebSummary] = useState('');
-  const [searchSource, setSearchSource] = useState<'local' | 'web' | null>(null);
+  const [searchSource, setSearchSource] = useState<'local' | 'web' | 'combined' | null>(null);
   const [loading, setLoading] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
 
@@ -105,17 +105,19 @@ const SearchPage: React.FC = () => {
         {/* Source indicator */}
         {searchSource && !loading && (
           <div style={{ marginBottom: 8 }}>
-            <Tag color={searchSource === 'local' ? 'purple' : 'blue'}>
-              {searchSource === 'local' ? '📚 来自本地知识库' : '🌐 来自网络搜索'}
+            <Tag color={searchSource === 'local' ? 'cyan' : searchSource === 'combined' ? 'green' : 'blue'}>
+              {searchSource === 'local' && '📚 来自本地知识库'}
+              {searchSource === 'web' && '🌐 来自网络搜索'}
+              {searchSource === 'combined' && '📚 本地知识库 + 🌐 网络新闻'}
             </Tag>
           </div>
         )}
 
-        {/* Web summary section */}
-        {searchSource === 'web' && webSummary && (
+        {/* Web summary section - show for 'web' or 'combined' source */}
+        {(searchSource === 'web' || searchSource === 'combined') && webSummary && (
           <Card
             className="glass-card"
-            title="网络搜索总结"
+            title={searchSource === 'combined' ? '🌐 相关网络新闻' : '网络搜索总结'}
             extra={
               <Button
                 type="primary"
@@ -133,57 +135,64 @@ const SearchPage: React.FC = () => {
           </Card>
         )}
 
-        {/* Local results list */}
-        {searchSource === 'local' && results.length > 0 && (
-          <List
-            dataSource={results}
-            loading={loading}
-            renderItem={(item: SearchResult, index: number) => {
-              const percent = toPercent(item.similarity);
-              const itemKey = `result-${item.id ?? index}`;
+        {/* Local results list - show for 'local' or 'combined' source */}
+        {(searchSource === 'local' || searchSource === 'combined') && results.length > 0 && (
+          <>
+            {searchSource === 'combined' && (
+              <Title level={4} style={{ marginBottom: 16, color: 'var(--text)' }}>
+                📚 本地知识库结果
+              </Title>
+            )}
+            <List
+              dataSource={results}
+              loading={loading}
+              renderItem={(item: SearchResult, index: number) => {
+                const percent = toPercent(item.similarity);
+                const itemKey = `result-${item.id ?? index}`;
 
-              return (
-                <List.Item>
-                  <Card className="glass-card result-card" style={{ width: '100%' }} hoverable>
-                    <Card.Meta
-                      title={item.title}
-                      description={
-                        <>
-                          <div className="markdown-content result-content">
-                            <ReactMarkdown>{item.content || ''}</ReactMarkdown>
-                          </div>
-
-                          {percent !== null && (
-                            <div className="energy-block">
-                              <div className="energy-meta">
-                                <span className="energy-label">语义相似度</span>
-                                <span className="energy-value">{percent.toFixed(1)}%</span>
-                              </div>
-                              <div className="energy-bar-track">
-                                <div
-                                  className="energy-bar-fill"
-                                  style={{ width: `${percent}%` }}
-                                />
-                              </div>
+                return (
+                  <List.Item>
+                    <Card className="glass-card result-card" style={{ width: '100%' }} hoverable>
+                      <Card.Meta
+                        title={item.title}
+                        description={
+                          <>
+                            <div className="markdown-content result-content">
+                              <ReactMarkdown>{item.content || ''}</ReactMarkdown>
                             </div>
-                          )}
 
-                          <Space wrap style={{ marginTop: 12 }}>
                             {percent !== null && (
-                              <Tag className="futuristic-tag">
-                                相似度 {percent.toFixed(1)}%
-                              </Tag>
+                              <div className="energy-block">
+                                <div className="energy-meta">
+                                  <span className="energy-label">语义相似度</span>
+                                  <span className="energy-value">{percent.toFixed(1)}%</span>
+                                </div>
+                                <div className="energy-bar-track">
+                                  <div
+                                    className="energy-bar-fill"
+                                    style={{ width: `${percent}%` }}
+                                  />
+                                </div>
+                              </div>
                             )}
-                            {item.source && <Tag className="futuristic-tag">{item.source}</Tag>}
-                          </Space>
-                        </>
-                      }
-                    />
-                  </Card>
-                </List.Item>
-              );
-            }}
-          />
+
+                            <Space wrap style={{ marginTop: 12 }}>
+                              {percent !== null && (
+                                <Tag className="futuristic-tag">
+                                  相似度 {percent.toFixed(1)}%
+                                </Tag>
+                              )}
+                              {item.source && <Tag className="futuristic-tag">{item.source}</Tag>}
+                            </Space>
+                          </>
+                        }
+                      />
+                    </Card>
+                  </List.Item>
+                );
+              }}
+            />
+          </>
         )}
 
         {/* Empty state */}

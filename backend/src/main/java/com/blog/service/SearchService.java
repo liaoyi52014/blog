@@ -44,16 +44,24 @@ public class SearchService {
     public List<KnowledgeVO> hybridSearch(String query, int limit, float threshold) {
         List<KnowledgeVO> vectorResults = vectorSearch(query, limit, threshold);
         List<KnowledgeVO> textResults = knowledgeRepository
-            .findByChunkContentContainingIgnoreCase(query)
-            .stream()
-            .map(this::toVO)
-            .collect(Collectors.toList());
+                .findByChunkContentContainingIgnoreCase(query)
+                .stream()
+                .map(this::toVO)
+                .collect(Collectors.toList());
 
         return mergeAndRank(vectorResults, textResults, limit);
     }
 
     public String webSearch(String query) {
         return aiService.searchAndSummarize(query);
+    }
+
+    /**
+     * Perform web search focused on news articles with source attribution.
+     * This method is designed for real-time news lookup.
+     */
+    public String webSearchWithNews(String query) {
+        return aiService.searchNewsWithSources(query);
     }
 
     private KnowledgeVO toVO(KnowledgeBase kb) {
@@ -70,8 +78,9 @@ public class SearchService {
         }
 
         return merged.values().stream()
-            .sorted(Comparator.comparing((KnowledgeVO vo) -> vo.getSimilarity() == null ? 0.0 : vo.getSimilarity()).reversed())
-            .limit(limit)
-            .collect(Collectors.toList());
+                .sorted(Comparator.comparing((KnowledgeVO vo) -> vo.getSimilarity() == null ? 0.0 : vo.getSimilarity())
+                        .reversed())
+                .limit(limit)
+                .collect(Collectors.toList());
     }
 }
