@@ -65,7 +65,8 @@ public class SearchService {
     }
 
     private KnowledgeVO toVO(KnowledgeBase kb) {
-        return new KnowledgeVO(kb.getId(), kb.getTitle(), kb.getChunkContent(), null, kb.getSourceType());
+        // Text match implies exact keyword match, assign high similarity
+        return new KnowledgeVO(kb.getId(), kb.getTitle(), kb.getChunkContent(), 1.0, kb.getSourceType());
     }
 
     private List<KnowledgeVO> mergeAndRank(List<KnowledgeVO> vectorResults, List<KnowledgeVO> textResults, int limit) {

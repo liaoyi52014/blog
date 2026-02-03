@@ -1,12 +1,15 @@
 ﻿import React, { useEffect, useRef } from 'react';
-import { ConfigProvider, Layout, Menu, theme } from 'antd';
-import { Link, Route, Routes, useLocation } from 'react-router-dom';
+import { ConfigProvider, Layout, Menu, Button, Dropdown, theme, message } from 'antd';
+import { Link, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { UserOutlined, LogoutOutlined, LoginOutlined } from '@ant-design/icons';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Home from './pages/Home';
 import SearchPage from './pages/SearchPage';
 import ImportPage from './pages/ImportPage';
 import RssImportPage from './pages/RssImportPage';
 import ChatPage from './pages/ChatPage';
 import CreateArticlePage from './pages/CreateArticlePage';
+import AuthPage from './pages/AuthPage';
 
 const { Header, Content, Footer } = Layout;
 
@@ -19,7 +22,74 @@ type Particle = {
   a: number;
 };
 
-const App: React.FC = () => {
+// Protected route wrapper
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isLoggedIn, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading && !isLoggedIn) {
+      message.warning('请先登录');
+      navigate('/login');
+    }
+  }, [isLoggedIn, isLoading, navigate]);
+
+  if (isLoading) {
+    return <div className="auth-loading">加载中...</div>;
+  }
+
+  return isLoggedIn ? <>{children}</> : null;
+};
+
+// Header auth controls
+const HeaderAuthControls: React.FC = () => {
+  const { user, isLoggedIn, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    message.success('已退出登录');
+    navigate('/');
+  };
+
+  if (!isLoggedIn) {
+    return (
+      <Button
+        type="text"
+        icon={<LoginOutlined />}
+        onClick={() => navigate('/login')}
+        className="header-auth-btn"
+      >
+        登录
+      </Button>
+    );
+  }
+
+  const menuItems = [
+    {
+      key: 'user',
+      label: <span>当前用户: {user?.username}</span>,
+      disabled: true
+    },
+    { type: 'divider' as const },
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: '退出登录',
+      onClick: handleLogout
+    }
+  ];
+
+  return (
+    <Dropdown menu={{ items: menuItems }} placement="bottomRight">
+      <Button type="text" icon={<UserOutlined />} className="header-auth-btn">
+        {user?.username}
+      </Button>
+    </Dropdown>
+  );
+};
+
+const AppContent: React.FC = () => {
   const location = useLocation();
   const { defaultAlgorithm, darkAlgorithm } = theme;
   const particlesRef = useRef<HTMLCanvasElement | null>(null);
@@ -29,7 +99,8 @@ const App: React.FC = () => {
       location.pathname.startsWith('/import') ? '/import' :
         location.pathname.startsWith('/rss') ? '/rss' :
           location.pathname.startsWith('/chat') ? '/chat' :
-            location.pathname.startsWith('/create') ? '/create' : '/';
+            location.pathname.startsWith('/create') ? '/create' :
+              location.pathname.startsWith('/login') ? '/login' : '/';
 
   useEffect(() => {
     const root = document.documentElement;
@@ -202,15 +273,18 @@ const App: React.FC = () => {
               { key: '/create', label: <Link to="/create">创建博客</Link> }
             ]}
           />
+          <HeaderAuthControls />
         </Header>
         <Content className="page-content">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/search" element={<SearchPage />} />
-            <Route path="/import" element={<ImportPage />} />
-            <Route path="/rss" element={<RssImportPage />} />
-            <Route path="/chat" element={<ChatPage />} />
-            <Route path="/create" element={<CreateArticlePage />} />
+            <Route path="/login" element={<AuthPage />} />
+            {/* Protected routes */}
+            <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
+            <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+            <Route path="/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
+            <Route path="/rss" element={<ProtectedRoute><RssImportPage /></ProtectedRoute>} />
+            <Route path="/create" element={<ProtectedRoute><CreateArticlePage /></ProtectedRoute>} />
           </Routes>
         </Content>
         <Footer className="app-footer">
@@ -218,6 +292,14 @@ const App: React.FC = () => {
         </Footer>
       </Layout>
     </ConfigProvider>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 };
 

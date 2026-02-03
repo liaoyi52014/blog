@@ -12,7 +12,7 @@ export const searchService = {
     request.post<ApiResponse<T>>('/api/search/web', { query, limit: 5, threshold: 0.7 }),
 
   // Unified search: first local, then fallback to web
-  unifiedSearch: <T = unknown>(query: string, limit = 10, threshold = 0.6) =>
+  unifiedSearch: <T = unknown>(query: string, limit = 10, threshold = 0.8) =>
     request.post<ApiResponse<T>>('/api/search/unified', { query, limit, threshold }),
 
   // Add external content to knowledge base

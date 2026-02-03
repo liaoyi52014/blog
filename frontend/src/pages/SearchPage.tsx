@@ -27,16 +27,28 @@ const toPercent = (value: unknown) => {
   return Math.max(0, Math.min(100, num * 100));
 };
 
+import { useSearchParams } from 'react-router-dom';
+
 const SearchPage: React.FC = () => {
-  const [query, setQuery] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [query, setQuery] = useState(searchParams.get('q') || '');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [webSummary, setWebSummary] = useState('');
   const [searchSource, setSearchSource] = useState<'local' | 'web' | 'combined' | null>(null);
   const [loading, setLoading] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
 
-  const handleSearch = async () => {
-    if (!query.trim()) return;
+  // Trigger search on mount if query param exists
+  React.useEffect(() => {
+    const q = searchParams.get('q');
+    if (q) {
+      setQuery(q);
+      void executeSearch(q);
+    }
+  }, [searchParams]);
+
+  const executeSearch = async (searchText: string) => {
+    if (!searchText.trim()) return;
 
     setLoading(true);
     setWebSummary('');
@@ -44,7 +56,7 @@ const SearchPage: React.FC = () => {
     setResults([]);
 
     try {
-      const resp = await searchService.unifiedSearch<UnifiedSearchData>(query);
+      const resp = await searchService.unifiedSearch<UnifiedSearchData>(searchText);
       const data = resp.data;
 
       if (data) {
@@ -62,9 +74,34 @@ const SearchPage: React.FC = () => {
     }
   };
 
-  const handleAddToKnowledge = async (title: string, content: string) => {
-    const saveId = `${title}-${Date.now()}`;
-    setSavingId(saveId);
+  const handleSearch = () => {
+    // Update URL param when manually searching
+    if (query.trim()) {
+      setSearchParams({ q: query.trim() });
+    } else {
+      setSearchParams({});
+    }
+    // executeSearch will be triggered by useEffect due to setSearchParams, 
+    // OR we can just call it directly. 
+    // Actually, setting search params triggers re-render, but usually we want explicit action.
+    // Let's call executeSearch directly to be responsive, and useEffect handles initial load.
+    // But wait, if we setSearchParams, it might trigger useEffect again.
+    // Let's keep useEffect ONLY for initial mount or external URL changes?
+    // Actually simplicity: useEffect on [searchParams] is good.
+    // But let's verify if setQuery updates searchParams. No.
+
+    // Better pattern:
+    // 1. Input onChange -> update local state `query`
+    // 2. Search Button -> update URL params `setSearchParams({q: query})`
+    // 3. useEffect `[searchParams]` -> checks if `q` changed, then calls `executeSearch`.
+
+    if (query.trim()) {
+      setSearchParams({ q: query.trim() });
+    }
+  };
+
+  const handleAddToKnowledge = async (title: string, content: string, trackingId: string) => {
+    setSavingId(trackingId);
 
     try {
       await searchService.addToKnowledge(title || '外部知识', content);
@@ -123,9 +160,10 @@ const SearchPage: React.FC = () => {
                 type="primary"
                 icon={<PlusOutlined />}
                 loading={savingId === 'web-summary'}
-                onClick={() => handleAddToKnowledge(query, webSummary)}
+                disabled={savingId !== null} // Disable if any saving is happening
+                onClick={() => handleAddToKnowledge(query, webSummary, 'web-summary')}
               >
-                保存到知识库
+                {savingId === 'web-summary' ? '保存中...' : '保存到知识库'}
               </Button>
             }
           >

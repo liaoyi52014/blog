@@ -67,3 +67,8 @@ app:
 rss:
   feeds:
     file: ${RSS_FEEDS_FILE:}
+
+# JWT Configuration
+app.jwt:
+  secret: ${JWT_SECRET:your-super-secret-key-change-in-production-32chars}
+  expiration-days: ${JWT_EXPIRATION_DAYS:7}

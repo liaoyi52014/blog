@@ -2,7 +2,8 @@ import axios, { AxiosRequestConfig } from 'axios';
 
 const instance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? '',
-  timeout: 30000
+  timeout: 30000,
+  withCredentials: true  // Required for HttpOnly cookie auth
 });
 
 instance.interceptors.response.use(
