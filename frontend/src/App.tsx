@@ -1,8 +1,10 @@
-﻿import React, { useEffect, useRef } from 'react';
-import { ConfigProvider, Layout, Menu, Button, Dropdown, theme, message } from 'antd';
+﻿import React, { useEffect, useRef, useState } from 'react';
+import { ConfigProvider, Layout, Menu, Button, Dropdown, Badge, theme, message } from 'antd';
 import { Link, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { UserOutlined, LogoutOutlined, LoginOutlined } from '@ant-design/icons';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { scheduleService } from './services';
+import dayjs from 'dayjs';
 import Home from './pages/Home';
 import SearchPage from './pages/SearchPage';
 import ImportPage from './pages/ImportPage';
@@ -95,6 +97,27 @@ const AppContent: React.FC = () => {
   const location = useLocation();
   const { defaultAlgorithm, darkAlgorithm } = theme;
   const particlesRef = useRef<HTMLCanvasElement | null>(null);
+  const [urgentCount, setUrgentCount] = useState(0);
+
+  // 加载紧急任务数量（到期/过期）
+  useEffect(() => {
+    const loadUrgentCount = async () => {
+      try {
+        const resp = await scheduleService.getTodayPending();
+        const tasks = resp.data ?? [];
+        const count = tasks.filter(s => {
+          const deadline = s.endDate || s.scheduleDate;
+          return dayjs(deadline).isBefore(dayjs().add(1, 'day'), 'day');
+        }).length;
+        setUrgentCount(count);
+      } catch {
+        // ignore
+      }
+    };
+    void loadUrgentCount();
+    const interval = setInterval(() => void loadUrgentCount(), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const selectedKey =
     location.pathname.startsWith('/search') ? '/search' :
@@ -261,7 +284,7 @@ const AppContent: React.FC = () => {
         <Header className="app-header">
           <div className="app-brand">
             <span className="brand-dot" />
-            个人科技圈博客
+            DayNote
           </div>
           <Menu
             className="app-menu"
@@ -270,13 +293,13 @@ const AppContent: React.FC = () => {
             selectedKeys={[selectedKey]}
             items={[
               { key: '/', label: <Link to="/">首页</Link> },
-              { key: '/schedule', label: <Link to="/schedule">日程</Link> },
+              { key: '/schedule', label: <Link to="/schedule" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>日程{urgentCount > 0 && <Badge count={urgentCount} size="small" />}</Link> },
               { key: '/project', label: <Link to="/project">项目</Link> },
               { key: '/search', label: <Link to="/search">知识检索</Link> },
               { key: '/import', label: <Link to="/import">文档导入</Link> },
               { key: '/rss', label: <Link to="/rss">RSS导入</Link> },
               { key: '/chat', label: <Link to="/chat">知识对话</Link> },
-              { key: '/create', label: <Link to="/create">创建博客</Link> }
+              { key: '/create', label: <Link to="/create">创建笔记</Link> }
             ]}
           />
           <HeaderAuthControls />
@@ -296,7 +319,7 @@ const AppContent: React.FC = () => {
           </Routes>
         </Content>
         <Footer className="app-footer">
-          Personal AI Blog © 2026
+          DayNote © 2026
         </Footer>
       </Layout>
     </ConfigProvider>

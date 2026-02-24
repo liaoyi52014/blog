@@ -10,10 +10,13 @@ import {
   ProjectOutlined,
   RightOutlined,
   FireOutlined,
-  TrophyOutlined
+  TrophyOutlined,
+  WarningOutlined,
+  ExclamationCircleOutlined
 } from '@ant-design/icons';
 import { scheduleService, projectService, type Schedule, type Project } from '../services';
 import dayjs from 'dayjs';
+import lunisolar from 'lunisolar';
 
 const { Title, Text } = Typography;
 
@@ -110,6 +113,17 @@ const Home: React.FC = () => {
   const pendingToday = todaySchedules.filter(s => s.status !== 'COMPLETED');
   const completedToday = todaySchedules.filter(s => s.status === 'COMPLETED');
 
+  // 计算紧急任务：已过期或今天到期的未完成任务
+  const today = dayjs().format('YYYY-MM-DD');
+  const urgentTasks = pendingToday.filter(s => {
+    const deadline = s.endDate || s.scheduleDate;
+    return dayjs(deadline).isBefore(dayjs(), 'day') || dayjs(deadline).isSame(dayjs(), 'day');
+  });
+  const overdueTasks = pendingToday.filter(s => {
+    const deadline = s.endDate || s.scheduleDate;
+    return dayjs(deadline).isBefore(dayjs(), 'day');
+  });
+
   return (
     <div className="home-page" style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
       {/* Header */}
@@ -118,6 +132,18 @@ const Home: React.FC = () => {
           <Title level={2} style={{ margin: 0 }}>
             {dayjs().format('M月D日')} {['日', '一', '二', '三', '四', '五', '六'][dayjs().day()]}曜日
           </Title>
+          {(() => {
+            const d = lunisolar();
+            const lunarStr = d.format('lMlD');
+            const solarTerm = d.solarTerm?.toString();
+            return (
+              <div style={{ marginTop: 4, marginBottom: 4 }}>
+                <Text type="secondary" style={{ fontSize: 14 }}>
+                  {lunarStr}{solarTerm ? ` · ${solarTerm}` : ''}
+                </Text>
+              </div>
+            );
+          })()}
           <Text type="secondary">
             {pendingToday.length > 0 
               ? `还有 ${pendingToday.length} 项任务待完成` 
@@ -135,6 +161,50 @@ const Home: React.FC = () => {
           新建日程
         </Button>
       </div>
+
+      {/* 紧急任务提醒横幅 */}
+      {urgentTasks.length > 0 && (
+        <div 
+          className="urgent-banner"
+          style={{
+            marginBottom: 24,
+            padding: '14px 20px',
+            borderRadius: 12,
+            background: overdueTasks.length > 0 
+              ? 'linear-gradient(135deg, rgba(255, 77, 79, 0.2), rgba(255, 77, 79, 0.08))' 
+              : 'linear-gradient(135deg, rgba(250, 173, 20, 0.2), rgba(250, 173, 20, 0.08))',
+            border: `1px solid ${overdueTasks.length > 0 ? 'rgba(255, 77, 79, 0.4)' : 'rgba(250, 173, 20, 0.4)'}`,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            animation: 'urgentPulse 2s ease-in-out infinite'
+          }}
+        >
+          <ExclamationCircleOutlined style={{ 
+            fontSize: 22, 
+            color: overdueTasks.length > 0 ? '#ff4d4f' : '#faad14' 
+          }} />
+          <div style={{ flex: 1 }}>
+            <Text strong style={{ fontSize: 15, color: overdueTasks.length > 0 ? '#ff4d4f' : '#faad14' }}>
+              {overdueTasks.length > 0 
+                ? `${overdueTasks.length} 项任务已过期！` 
+                : `${urgentTasks.length} 项任务今日到期`}
+            </Text>
+            <div>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {urgentTasks.map(t => t.title).join('、')}
+              </Text>
+            </div>
+          </div>
+          <Button 
+            type="link" 
+            style={{ color: overdueTasks.length > 0 ? '#ff4d4f' : '#faad14', fontWeight: 600 }}
+            onClick={() => navigate('/schedule')}
+          >
+            立即处理 <RightOutlined />
+          </Button>
+        </div>
+      )}
 
       <Spin spinning={loading}>
         <Row gutter={[24, 24]}>
@@ -166,6 +236,10 @@ const Home: React.FC = () => {
                       HIGH: '#ff4d4f'
                     };
                     const priorityColor = priorityColors[schedule.priority || 'MEDIUM'] || '#faad14';
+                    const deadline = schedule.endDate || schedule.scheduleDate;
+                    const isOverdue = dayjs(deadline).isBefore(dayjs(), 'day');
+                    const isDueToday = dayjs(deadline).isSame(dayjs(), 'day');
+                    const isUrgent = isOverdue || isDueToday;
                     return (
                       <div 
                         key={schedule.id} 
@@ -174,13 +248,18 @@ const Home: React.FC = () => {
                           alignItems: 'center', 
                           gap: 12,
                           padding: '12px 16px',
-                          background: 'var(--bg-2)',
+                          background: isOverdue 
+                            ? 'rgba(255, 77, 79, 0.08)' 
+                            : isDueToday 
+                              ? 'rgba(250, 173, 20, 0.08)' 
+                              : 'var(--bg-2)',
                           borderRadius: 8,
-                          borderLeft: `4px solid ${priorityColor}`,
+                          borderLeft: `4px solid ${isOverdue ? '#ff4d4f' : isDueToday ? '#faad14' : priorityColor}`,
                           cursor: 'pointer',
-                          transition: 'all 0.2s ease'
+                          transition: 'all 0.2s ease',
+                          animation: isUrgent ? 'taskUrgentPulse 2.5s ease-in-out infinite' : undefined
                         }}
-                        className="task-item"
+                        className={`task-item ${isUrgent ? 'task-urgent' : ''}`}
                         onClick={() => navigate('/schedule')}
                       >
                         <Dropdown
@@ -197,7 +276,21 @@ const Home: React.FC = () => {
                           </Tag>
                         </Dropdown>
                         <div style={{ flex: 1, overflow: 'hidden' }}>
-                          <Text style={{ fontSize: 15 }} ellipsis>{schedule.title}</Text>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <Text style={{ fontSize: 15 }} ellipsis>{schedule.title}</Text>
+                            {schedule.projectId && (() => {
+                              const project = activeProjects.find(p => p.id === schedule.projectId);
+                              return project ? (
+                                <Tag 
+                                  color={project.color} 
+                                  icon={<ProjectOutlined />} 
+                                  style={{ margin: 0, fontSize: 11 }}
+                                >
+                                  {project.name}
+                                </Tag>
+                              ) : null;
+                            })()}
+                          </div>
                           {schedule.description && (
                             <div>
                               <Text type="secondary" style={{ fontSize: 12 }} ellipsis>
@@ -209,6 +302,16 @@ const Home: React.FC = () => {
                         {schedule.endDate && (
                           <Tag color="blue" style={{ margin: 0 }}>
                             {schedule.endDate}
+                          </Tag>
+                        )}
+                        {isOverdue && (
+                          <Tag color="error" icon={<WarningOutlined />} style={{ margin: 0 }}>
+                            已过期
+                          </Tag>
+                        )}
+                        {isDueToday && !isOverdue && (
+                          <Tag color="warning" icon={<ExclamationCircleOutlined />} style={{ margin: 0 }}>
+                            今日到期
                           </Tag>
                         )}
                       </div>

@@ -23,7 +23,9 @@ import {
   BarChartOutlined,
   PlusOutlined,
   ProjectOutlined,
-  SyncOutlined
+  SyncOutlined,
+  WarningOutlined,
+  ExclamationCircleOutlined
 } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { scheduleService, projectService, type Schedule, type Project } from '../services';
@@ -215,10 +217,26 @@ const SchedulePage: React.FC = () => {
     const config = statusConfig[schedule.status] || statusConfig.PENDING;
     const projectName = getProjectName(schedule.projectId);
     const projectColor = getProjectColor(schedule.projectId);
+    const deadline = schedule.endDate || schedule.scheduleDate;
+    const isOverdue = schedule.status !== 'COMPLETED' && dayjs(deadline).isBefore(dayjs(), 'day');
+    const isDueToday = schedule.status !== 'COMPLETED' && dayjs(deadline).isSame(dayjs(), 'day');
+    const isUrgent = isOverdue || isDueToday;
 
     return (
       <List.Item
         key={schedule.id}
+        style={{
+          background: isOverdue 
+            ? 'rgba(255, 77, 79, 0.06)' 
+            : isDueToday 
+              ? 'rgba(250, 173, 20, 0.06)' 
+              : undefined,
+          borderLeft: isUrgent 
+            ? `3px solid ${isOverdue ? '#ff4d4f' : '#faad14'}` 
+            : undefined,
+          paddingLeft: isUrgent ? 12 : undefined,
+          animation: isUrgent ? 'taskUrgentPulse 2.5s ease-in-out infinite' : undefined
+        }}
         actions={[
           <Select
             key="status"
@@ -262,6 +280,16 @@ const SchedulePage: React.FC = () => {
               {projectName && (
                 <Tag color={projectColor} icon={<ProjectOutlined />} style={{ fontSize: 11 }}>
                   {projectName}
+                </Tag>
+              )}
+              {isOverdue && (
+                <Tag color="error" icon={<WarningOutlined />} style={{ fontSize: 11 }}>
+                  已过期
+                </Tag>
+              )}
+              {isDueToday && !isOverdue && (
+                <Tag color="warning" icon={<ExclamationCircleOutlined />} style={{ fontSize: 11 }}>
+                  今日到期
                 </Tag>
               )}
             </div>

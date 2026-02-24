@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useEffect, useState, useCallback } from 'react';
 import { Dropdown } from 'antd';
-import { CheckCircleOutlined, ClockCircleOutlined, SyncOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, ClockCircleOutlined, SyncOutlined, WarningOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import './GanttChart.css';
 
@@ -113,8 +113,8 @@ const GanttChart: React.FC<GanttChartProps> = ({
       HIGH: '#ff4d4f'
     };
     
-    // 优先使用 task.color，其次使用优先级颜色，默认黄色
-    const bgColor = task.color || priorityColors[task.priority || 'MEDIUM'] || '#faad14';
+    // 始终使用优先级颜色：LOW=绿色, MEDIUM=黄色, HIGH=红色
+    const bgColor = priorityColors[task.priority || 'MEDIUM'] || '#faad14';
     
     return {
       left,
@@ -223,6 +223,10 @@ const GanttChart: React.FC<GanttChartProps> = ({
             <div className="gantt-empty">暂无日程</div>
           ) : (
             tasks.map(task => {
+              const deadline = task.endDate || task.startDate;
+              const isOverdue = task.status !== 'COMPLETED' && dayjs(deadline).isBefore(dayjs(), 'day');
+              const isDueToday = task.status !== 'COMPLETED' && dayjs(deadline).isSame(dayjs(), 'day');
+              const isUrgent = isOverdue || isDueToday;
               const statusMenuItems = [
                 {
                   key: 'PENDING',
@@ -256,7 +260,14 @@ const GanttChart: React.FC<GanttChartProps> = ({
               return (
                 <div 
                   key={task.id} 
-                  className="gantt-task-row"
+                  className={`gantt-task-row ${isUrgent ? 'gantt-task-urgent' : ''}`}
+                  style={{
+                    background: isOverdue 
+                      ? 'rgba(255, 77, 79, 0.08)' 
+                      : isDueToday 
+                        ? 'rgba(250, 173, 20, 0.08)' 
+                        : undefined
+                  }}
                 >
                   <div className="gantt-task-cell task-name">
                     <Dropdown
@@ -270,8 +281,10 @@ const GanttChart: React.FC<GanttChartProps> = ({
                       />
                     </Dropdown>
                     <span className="task-title" onClick={() => onTaskClick?.(task)}>{task.title}</span>
+                    {isOverdue && <WarningOutlined style={{ color: '#ff4d4f', fontSize: 12, flexShrink: 0 }} />}
+                    {isDueToday && !isOverdue && <WarningOutlined style={{ color: '#faad14', fontSize: 12, flexShrink: 0 }} />}
                   </div>
-                  <div className="gantt-task-cell task-date">
+                  <div className="gantt-task-cell task-date" style={{ color: isOverdue ? '#ff4d4f' : isDueToday ? '#faad14' : undefined }}>
                     {task.endDate || task.startDate}
                   </div>
                 </div>
@@ -331,11 +344,15 @@ const GanttChart: React.FC<GanttChartProps> = ({
                 tasks.map(task => {
                   const pos = getTaskPosition(task);
                   const isDragging = dragging?.taskId === task.id;
+                  const deadline = task.endDate || task.startDate;
+                  const barUrgent = task.status !== 'COMPLETED' && (
+                    dayjs(deadline).isBefore(dayjs(), 'day') || dayjs(deadline).isSame(dayjs(), 'day')
+                  );
                   return (
                     <div key={task.id} className="gantt-bar-row">
                       {pos && (
                         <div 
-                          className={`gantt-bar status-${task.status.toLowerCase()} ${isDragging ? 'dragging' : ''}`}
+                          className={`gantt-bar status-${task.status.toLowerCase()} ${isDragging ? 'dragging' : ''} ${barUrgent ? 'gantt-bar-urgent' : ''}`}
                           style={{
                             left: pos.left,
                             width: pos.width,
