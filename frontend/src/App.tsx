@@ -10,6 +10,8 @@ import RssImportPage from './pages/RssImportPage';
 import ChatPage from './pages/ChatPage';
 import CreateArticlePage from './pages/CreateArticlePage';
 import AuthPage from './pages/AuthPage';
+import SchedulePage from './pages/SchedulePage';
+import ProjectPage from './pages/ProjectPage';
 
 const { Header, Content, Footer } = Layout;
 
@@ -100,7 +102,9 @@ const AppContent: React.FC = () => {
         location.pathname.startsWith('/rss') ? '/rss' :
           location.pathname.startsWith('/chat') ? '/chat' :
             location.pathname.startsWith('/create') ? '/create' :
-              location.pathname.startsWith('/login') ? '/login' : '/';
+              location.pathname.startsWith('/schedule') ? '/schedule' :
+                location.pathname.startsWith('/project') ? '/project' :
+                  location.pathname.startsWith('/login') ? '/login' : '/';
 
   useEffect(() => {
     const root = document.documentElement;
@@ -266,6 +270,8 @@ const AppContent: React.FC = () => {
             selectedKeys={[selectedKey]}
             items={[
               { key: '/', label: <Link to="/">首页</Link> },
+              { key: '/schedule', label: <Link to="/schedule">日程</Link> },
+              { key: '/project', label: <Link to="/project">项目</Link> },
               { key: '/search', label: <Link to="/search">知识检索</Link> },
               { key: '/import', label: <Link to="/import">文档导入</Link> },
               { key: '/rss', label: <Link to="/rss">RSS导入</Link> },
@@ -279,6 +285,8 @@ const AppContent: React.FC = () => {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<AuthPage />} />
+            <Route path="/schedule" element={<SchedulePage />} />
+            <Route path="/project" element={<ProjectPage />} />
             {/* Protected routes */}
             <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
             <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />

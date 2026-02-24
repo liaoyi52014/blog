@@ -26,6 +26,9 @@ const request = {
   put<T>(url: string, data?: unknown, config?: RequestConfig): Promise<T> {
     return instance.put<T>(url, data, config).then(res => res.data);
   },
+  patch<T>(url: string, data?: unknown, config?: RequestConfig): Promise<T> {
+    return instance.patch<T>(url, data, config).then(res => res.data);
+  },
   delete<T>(url: string, config?: RequestConfig): Promise<T> {
     return instance.delete<T>(url, config).then(res => res.data);
   }

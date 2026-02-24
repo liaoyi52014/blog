@@ -1874,3 +1874,587 @@ a {
 .app-menu {
   flex: 1;
 }
+
+/* ================== Modal Dark Theme ================== */
+.ant-modal .ant-modal-content {
+  background: var(--bg-1) !important;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.ant-modal .ant-modal-header {
+  background: transparent !important;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.ant-modal .ant-modal-title {
+  color: var(--text) !important;
+  font-weight: 600;
+}
+
+.ant-modal .ant-modal-close {
+  color: var(--text-secondary) !important;
+}
+
+.ant-modal .ant-modal-close:hover {
+  color: var(--text) !important;
+  background: rgba(0, 201, 167, 0.1) !important;
+}
+
+.ant-modal .ant-modal-body {
+  background: transparent !important;
+}
+
+.ant-modal .ant-modal-footer {
+  background: transparent !important;
+  border-top: 1px solid var(--card-border);
+}
+
+/* Modal Form Inputs */
+.ant-modal .ant-input,
+.ant-modal .ant-input-affix-wrapper,
+.ant-modal textarea.ant-input {
+  background: var(--bg-2) !important;
+  border-color: var(--card-border) !important;
+  color: var(--text) !important;
+}
+
+.ant-modal .ant-input::placeholder,
+.ant-modal textarea.ant-input::placeholder {
+  color: var(--text-muted) !important;
+}
+
+.ant-modal .ant-input:hover,
+.ant-modal .ant-input-affix-wrapper:hover,
+.ant-modal textarea.ant-input:hover {
+  border-color: var(--primary) !important;
+}
+
+.ant-modal .ant-input:focus,
+.ant-modal .ant-input-affix-wrapper-focused,
+.ant-modal textarea.ant-input:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px var(--primary-soft) !important;
+}
+
+/* Modal Select */
+.ant-modal .ant-select .ant-select-selector {
+  background: var(--bg-2) !important;
+  border-color: var(--card-border) !important;
+  color: var(--text) !important;
+}
+
+.ant-modal .ant-select:hover .ant-select-selector {
+  border-color: var(--primary) !important;
+}
+
+.ant-modal .ant-select-focused .ant-select-selector {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px var(--primary-soft) !important;
+}
+
+.ant-modal .ant-select-arrow {
+  color: var(--text-secondary) !important;
+}
+
+/* Modal DatePicker */
+.ant-modal .ant-picker {
+  background: var(--bg-2) !important;
+  border-color: var(--card-border) !important;
+}
+
+.ant-modal .ant-picker:hover {
+  border-color: var(--primary) !important;
+}
+
+.ant-modal .ant-picker-focused {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px var(--primary-soft) !important;
+}
+
+.ant-modal .ant-picker-input > input {
+  color: var(--text) !important;
+}
+
+.ant-modal .ant-picker-input > input::placeholder {
+  color: var(--text-muted) !important;
+}
+
+.ant-modal .ant-picker-suffix,
+.ant-modal .ant-picker-clear {
+  color: var(--text-secondary) !important;
+}
+
+/* Modal Checkbox */
+.ant-modal .ant-checkbox-wrapper {
+  color: var(--text) !important;
+}
+
+.ant-modal .ant-checkbox-wrapper span {
+  color: var(--text) !important;
+}
+
+.ant-modal .ant-checkbox .ant-checkbox-inner {
+  background: var(--bg-2) !important;
+  border-color: var(--card-border) !important;
+}
+
+.ant-modal .ant-checkbox-checked .ant-checkbox-inner {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+.ant-modal .ant-checkbox:hover .ant-checkbox-inner {
+  border-color: var(--primary) !important;
+}
+
+/* Global Checkbox */
+.ant-checkbox-wrapper {
+  color: var(--text) !important;
+}
+
+.ant-checkbox .ant-checkbox-inner {
+  background: var(--bg-2) !important;
+  border-color: var(--card-border) !important;
+}
+
+.ant-checkbox-checked .ant-checkbox-inner {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+/* Tag Dark Theme */
+.ant-tag {
+  color: var(--text) !important;
+}
+
+.ant-tag-blue {
+  background: rgba(54, 168, 255, 0.15) !important;
+  border-color: rgba(54, 168, 255, 0.3) !important;
+  color: #36a8ff !important;
+}
+
+.ant-tag-green {
+  background: rgba(82, 196, 26, 0.15) !important;
+  border-color: rgba(82, 196, 26, 0.3) !important;
+  color: #52c41a !important;
+}
+
+.ant-tag-orange, .ant-tag-warning {
+  background: rgba(250, 173, 20, 0.15) !important;
+  border-color: rgba(250, 173, 20, 0.3) !important;
+  color: #faad14 !important;
+}
+
+.ant-tag-red, .ant-tag-error {
+  background: rgba(255, 77, 79, 0.15) !important;
+  border-color: rgba(255, 77, 79, 0.3) !important;
+  color: #ff4d4f !important;
+}
+
+.ant-tag-cyan {
+  background: rgba(0, 201, 167, 0.15) !important;
+  border-color: rgba(0, 201, 167, 0.3) !important;
+  color: var(--primary) !important;
+}
+
+.ant-tag-purple {
+  background: rgba(114, 46, 209, 0.15) !important;
+  border-color: rgba(114, 46, 209, 0.3) !important;
+  color: #722ed1 !important;
+}
+
+.ant-tag-processing {
+  background: rgba(54, 168, 255, 0.15) !important;
+  border-color: rgba(54, 168, 255, 0.3) !important;
+  color: #36a8ff !important;
+}
+
+.ant-tag-success {
+  background: rgba(82, 196, 26, 0.15) !important;
+  border-color: rgba(82, 196, 26, 0.3) !important;
+  color: #52c41a !important;
+}
+
+/* Select Dropdown (Global) */
+.ant-select-dropdown {
+  background: var(--bg-2) !important;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.ant-select-dropdown .ant-select-item {
+  color: var(--text) !important;
+}
+
+.ant-select-dropdown .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+  background: var(--primary-soft) !important;
+}
+
+.ant-select-dropdown .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+  background: rgba(0, 201, 167, 0.25) !important;
+  color: var(--text) !important;
+}
+
+/* DatePicker Dropdown (Global) */
+.ant-picker-dropdown {
+  background: transparent !important;
+}
+
+.ant-picker-dropdown .ant-picker-panel-container {
+  background: var(--bg-2) !important;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.ant-picker-dropdown .ant-picker-header {
+  color: var(--text) !important;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.ant-picker-dropdown .ant-picker-header button {
+  color: var(--text-secondary) !important;
+}
+
+.ant-picker-dropdown .ant-picker-header button:hover {
+  color: var(--text) !important;
+}
+
+.ant-picker-dropdown .ant-picker-content th {
+  color: var(--text-secondary) !important;
+}
+
+.ant-picker-dropdown .ant-picker-cell {
+  color: var(--text-muted) !important;
+}
+
+.ant-picker-dropdown .ant-picker-cell-in-view {
+  color: var(--text) !important;
+}
+
+.ant-picker-dropdown .ant-picker-cell:hover:not(.ant-picker-cell-disabled) .ant-picker-cell-inner {
+  background: var(--primary-soft) !important;
+}
+
+.ant-picker-dropdown .ant-picker-cell-selected .ant-picker-cell-inner {
+  background: var(--primary) !important;
+  color: var(--bg-0) !important;
+}
+
+.ant-picker-dropdown .ant-picker-cell-today .ant-picker-cell-inner::before {
+  border-color: var(--primary) !important;
+}
+
+.ant-picker-dropdown .ant-picker-footer {
+  border-top: 1px solid var(--card-border);
+}
+
+.ant-picker-dropdown .ant-picker-today-btn {
+  color: var(--primary) !important;
+}
+
+/* Dropdown Menu (Global) */
+.ant-dropdown .ant-dropdown-menu {
+  background: var(--bg-2) !important;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.ant-dropdown .ant-dropdown-menu-item {
+  color: var(--text) !important;
+}
+
+.ant-dropdown .ant-dropdown-menu-item:hover {
+  background: var(--primary-soft) !important;
+}
+
+.ant-dropdown .ant-dropdown-menu-item-disabled {
+  color: var(--text-muted) !important;
+}
+
+.ant-dropdown .ant-dropdown-menu-item .anticon {
+  color: var(--text-secondary) !important;
+}
+
+/* Card extra link style */
+.ant-card-extra a {
+  color: var(--primary) !important;
+  font-weight: 500;
+}
+
+.ant-card-extra a:hover {
+  color: var(--glow) !important;
+}
+
+/* ================== Schedule Page Styles ================== */
+.schedule-page .ant-picker {
+  background: var(--bg-2) !important;
+  border-color: var(--card-border) !important;
+}
+
+.schedule-page .ant-picker:hover {
+  border-color: var(--primary) !important;
+}
+
+.schedule-page .ant-picker-focused {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px var(--primary-soft) !important;
+}
+
+.schedule-page .ant-picker-input > input {
+  color: var(--text) !important;
+}
+
+.schedule-page .ant-picker-suffix {
+  color: var(--text-secondary) !important;
+}
+
+/* List Styles */
+.ant-list {
+  color: var(--text) !important;
+}
+
+.ant-list-item {
+  border-bottom-color: var(--card-border) !important;
+}
+
+.ant-list-item-meta-title {
+  color: var(--text) !important;
+}
+
+.ant-list-item-meta-title span {
+  color: var(--text) !important;
+}
+
+.ant-list-item-meta-description {
+  color: var(--text-secondary) !important;
+}
+
+.ant-list-empty-text {
+  color: var(--text-muted) !important;
+}
+
+/* Select in List */
+.ant-list .ant-select .ant-select-selector {
+  background: var(--bg-2) !important;
+  border-color: var(--card-border) !important;
+  color: var(--text) !important;
+}
+
+.ant-list .ant-select:hover .ant-select-selector {
+  border-color: var(--primary) !important;
+}
+
+.ant-list .ant-select-focused .ant-select-selector {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px var(--primary-soft) !important;
+}
+
+.ant-list .ant-select-arrow {
+  color: var(--text-secondary) !important;
+}
+
+/* Text Button in List */
+.ant-list .ant-btn-text {
+  color: var(--text-secondary) !important;
+}
+
+.ant-list .ant-btn-text:hover {
+  color: var(--primary) !important;
+  background: var(--primary-soft) !important;
+}
+
+.ant-list .ant-btn-text.ant-btn-dangerous {
+  color: #ff4d4f !important;
+}
+
+.ant-list .ant-btn-text.ant-btn-dangerous:hover {
+  color: #ff7875 !important;
+  background: rgba(255, 77, 79, 0.1) !important;
+}
+
+/* Spin loading */
+.ant-spin-text {
+  color: var(--text-secondary) !important;
+}
+
+/* ================== Gantt Chart Styles ================== */
+.gantt-container {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  background: var(--bg-1) !important;
+}
+
+/* Force dark background on all child elements */
+.gantt-container,
+.gantt-container > div,
+.gantt-container > div > div,
+.gantt-container * {
+  --gantt-bg: var(--bg-1);
+  --gantt-border: var(--card-border);
+}
+
+/* Main SVG container */
+.gantt-container svg {
+  background: var(--bg-1) !important;
+}
+
+/* Target all white/light backgrounds in SVG */
+.gantt-container svg rect {
+  transition: fill 0.2s ease;
+}
+
+.gantt-container svg rect[fill="#fff"],
+.gantt-container svg rect[fill="white"],
+.gantt-container svg rect[fill="#ffffff"],
+.gantt-container svg rect[fill="rgb(255, 255, 255)"] {
+  fill: var(--bg-1) !important;
+}
+
+.gantt-container svg rect[fill="#f5f5f5"],
+.gantt-container svg rect[fill="#e0e0e0"],
+.gantt-container svg rect[fill="#f0f0f0"],
+.gantt-container svg rect[fill="#ebebeb"],
+.gantt-container svg rect[fill="rgb(245, 245, 245)"],
+.gantt-container svg rect[fill="rgb(235, 235, 235)"] {
+  fill: var(--bg-2) !important;
+}
+
+/* Grid row backgrounds - alternating colors */
+.gantt-container svg g > rect[y] {
+  fill: var(--bg-1) !important;
+}
+
+.gantt-container svg g > rect[y]:nth-child(even) {
+  fill: rgba(15, 26, 34, 0.6) !important;
+}
+
+/* Grid lines */
+.gantt-container svg line {
+  stroke: rgba(0, 201, 167, 0.1) !important;
+}
+
+/* Today highlight area */
+.gantt-container svg rect[fill*="rgba(233"],
+.gantt-container svg rect[fill*="rgba(252"] {
+  fill: rgba(0, 201, 167, 0.12) !important;
+}
+
+/* All text in gantt - force light color */
+.gantt-container svg text {
+  fill: var(--text) !important;
+  font-family: "DM Sans", "SF Pro Display", "Segoe UI", "PingFang SC", sans-serif !important;
+  font-weight: 500 !important;
+}
+
+/* Calendar/header area - use secondary text color */
+.gantt-container svg > g:first-of-type text {
+  fill: var(--text-secondary) !important;
+  font-size: 12px !important;
+}
+
+/* Task bar wrapper background fix */
+.gantt-container > div > div:first-child {
+  background: var(--bg-1) !important;
+}
+
+/* Horizontal container (calendar header) */
+.gantt-container > div > div:last-child {
+  background: var(--bg-1) !important;
+}
+
+/* Calendar header rect */
+.gantt-container svg > g > g:first-child > rect {
+  fill: var(--bg-2) !important;
+}
+
+/* Tooltip - critical for UX */
+.gantt-container [class*="tooltip"],
+[class*="tooltipDefaultContainer"] {
+  background: var(--bg-2) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6) !important;
+  padding: 14px 18px !important;
+  color: var(--text) !important;
+}
+
+[class*="tooltipDefaultContainer"] p,
+[class*="tooltipDefaultContainer"] b,
+[class*="tooltipDefaultContainer"] span {
+  color: var(--text) !important;
+}
+
+[class*="tooltipDefaultContainer"] p {
+  margin: 6px 0 !important;
+  font-size: 13px !important;
+}
+
+/* View mode toggle in schedule page */
+.schedule-page .ant-radio-group {
+  display: inline-flex;
+  padding: 4px;
+  gap: 4px;
+  border-radius: 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--card-border);
+}
+
+.schedule-page .ant-radio-button-wrapper {
+  border-radius: 8px !important;
+  border: none !important;
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  font-weight: 500;
+  height: 32px !important;
+  line-height: 30px !important;
+  padding: 0 14px !important;
+  transition: all 0.25s ease;
+}
+
+.schedule-page .ant-radio-button-wrapper:not(:first-child)::before {
+  display: none !important;
+}
+
+.schedule-page .ant-radio-button-wrapper:hover {
+  color: var(--text) !important;
+}
+
+.schedule-page .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
+  color: white !important;
+  background: linear-gradient(135deg, var(--primary), var(--accent)) !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 12px rgba(0, 201, 167, 0.3);
+}
+
+/* Schedule page select styling */
+.schedule-page .ant-select .ant-select-selector {
+  background: var(--bg-2) !important;
+  border-color: var(--card-border) !important;
+}
+
+/* Scrollbar styling for gantt */
+.gantt-container ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.gantt-container ::-webkit-scrollbar-track {
+  background: var(--bg-2);
+  border-radius: 4px;
+}
+
+.gantt-container ::-webkit-scrollbar-thumb {
+  background: rgba(0, 201, 167, 0.25);
+  border-radius: 4px;
+}
+
+.gantt-container ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 201, 167, 0.4);
+}
+
+/* Empty state styling */
+.gantt-container svg rect[fill="#333"] {
+  fill: var(--bg-2) !important;
+}

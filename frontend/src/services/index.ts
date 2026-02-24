@@ -4,5 +4,7 @@ export * from './searchService';
 export * from './importService';
 export * from './rssService';
 export * from './chatService';
+export * from './scheduleService';
 export * from './statsService';
 export * from './authService';
+export * from './projectService';

@@ -50,6 +50,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/knowledge").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/knowledge/**").permitAll()
 
+                        // Public endpoints - schedules (allow all operations)
+                        .requestMatchers("/api/schedules/**").permitAll()
+
+                        // Public endpoints - projects (allow all operations)
+                        .requestMatchers("/api/projects/**").permitAll()
+
                         // Public endpoints - search and chat (REMOVED - now protected)
                         // .requestMatchers("/api/search/**").permitAll()
                         // .requestMatchers("/api/chat/**").permitAll()
@@ -78,7 +84,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 

@@ -1,82 +1,29 @@
 ﻿import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, Col, Row, Input, Typography, Spin } from 'antd';
+import { useNavigate, Link } from 'react-router-dom';
+import { Card, Col, Row, Typography, Spin, Tag, message, Dropdown, Button, Progress } from 'antd';
 import {
-  SearchOutlined,
-  MessageOutlined,
-  UploadOutlined,
-  EditOutlined,
-  DatabaseOutlined,
-  ReadOutlined,
-  NotificationOutlined
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  SyncOutlined,
+  PlusOutlined,
+  CalendarOutlined,
+  ProjectOutlined,
+  RightOutlined,
+  FireOutlined,
+  TrophyOutlined
 } from '@ant-design/icons';
-import ArticleCard from '../components/article/ArticleCard';
-import { articleService, newsService, statsService, type DashboardStats } from '../services';
+import { scheduleService, projectService, type Schedule, type Project } from '../services';
+import dayjs from 'dayjs';
 
-type Article = {
-  id: number;
-  title: string;
-  summary?: string;
-  category?: string;
-  author?: string;
-};
-
-type News = {
-  id: number;
-  title: string;
-  summary?: string;
-  sourceUrl?: string;
-  sourceName?: string;
-};
-
-const { Title, Paragraph, Text } = Typography;
-const { Search } = Input;
-
-const QUICK_ACTIONS = [
-  {
-    key: 'search',
-    icon: <SearchOutlined />,
-    title: '知识检索',
-    desc: '语义搜索知识库',
-    path: '/search',
-    gradient: 'linear-gradient(135deg, #00C9A7, #00E5C4)'
-  },
-  {
-    key: 'chat',
-    icon: <MessageOutlined />,
-    title: '知识对话',
-    desc: 'AI 智能问答',
-    path: '/chat',
-    gradient: 'linear-gradient(135deg, #36A8FF, #6BC5FF)'
-  },
-  {
-    key: 'import',
-    icon: <UploadOutlined />,
-    title: '文档导入',
-    desc: '上传文档到知识库',
-    path: '/import',
-    gradient: 'linear-gradient(135deg, #9B59B6, #BE90D4)'
-  },
-  {
-    key: 'create',
-    icon: <EditOutlined />,
-    title: '写博客',
-    desc: '创作技术文章',
-    path: '/create',
-    gradient: 'linear-gradient(135deg, #F39C12, #F1C40F)'
-  }
-];
-
-import { useAuth } from '../contexts/AuthContext';
-import { message } from 'antd';
+const { Title, Text } = Typography;
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
-  const { isLoggedIn } = useAuth();
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [aiNews, setAiNews] = useState<News[]>([]);
-  const [stats, setStats] = useState<DashboardStats>({ knowledgeCount: 0, articleCount: 0, newsCount: 0 });
+  const [todaySchedules, setTodaySchedules] = useState<Schedule[]>([]);
+  const [weekSchedules, setWeekSchedules] = useState<Schedule[]>([]);
+  const [activeProjects, setActiveProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({ pending: 0, inProgress: 0, completed: 0 });
 
   useEffect(() => {
     void loadData();
@@ -85,15 +32,28 @@ const Home: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [articlesResp, newsResp, dashboardStats] = await Promise.all([
-        articleService.getPublished<Article[]>(),
-        newsService.getFeatured<News[]>(),
-        statsService.getDashboardStats()
+      const weekStart = dayjs().startOf('week').format('YYYY-MM-DD');
+      const weekEnd = dayjs().endOf('week').format('YYYY-MM-DD');
+
+      const [todayResp, weekResp, projectsResp] = await Promise.all([
+        scheduleService.getTodayPending(),
+        scheduleService.getByDateRange(weekStart, weekEnd),
+        projectService.getActive()
       ]);
 
-      setArticles(articlesResp.data ?? []);
-      setAiNews(newsResp.data ?? []);
-      setStats(dashboardStats);
+      const todayData = todayResp.data ?? [];
+      const weekData = weekResp.data ?? [];
+      
+      setTodaySchedules(todayData);
+      setWeekSchedules(weekData);
+      setActiveProjects(projectsResp.data ?? []);
+      
+      // 计算本周统计
+      setStats({
+        pending: weekData.filter(s => s.status === 'PENDING').length,
+        inProgress: weekData.filter(s => s.status === 'IN_PROGRESS').length,
+        completed: weekData.filter(s => s.status === 'COMPLETED').length
+      });
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {
@@ -101,215 +61,325 @@ const Home: React.FC = () => {
     }
   };
 
-  const handleSearch = useCallback((value: string) => {
-    if (!isLoggedIn) {
-      message.warning('请先登录以使用知识检索功能');
-      navigate('/login');
-      return;
+  const handleScheduleStatusChange = async (id: number, newStatus: string) => {
+    try {
+      await scheduleService.updateStatus(id, newStatus);
+      message.success('状态已更新');
+      void loadData();
+    } catch {
+      message.error('更新状态失败');
     }
-    if (value.trim()) {
-      navigate(`/search?q=${encodeURIComponent(value.trim())}`);
-    } else {
-      navigate('/search');
-    }
-  }, [navigate, isLoggedIn]);
+  };
 
-  const handleQuickAction = useCallback((path: string) => {
-    // For protected routes, check login status first for better UX
-    const protectedPaths = ['/search', '/chat', '/import', '/create'];
-    if (protectedPaths.some(p => path.startsWith(p)) && !isLoggedIn) {
-      message.warning('请先登录');
-      navigate('/login');
-      return;
-    }
-    navigate(path);
-  }, [navigate, isLoggedIn]);
-
-  const statsCards = [
+  const getStatusMenuItems = (scheduleId: number, currentStatus: string) => [
     {
-      key: 'knowledge',
-      icon: <DatabaseOutlined />,
-      label: '知识库',
-      value: stats.knowledgeCount,
-      hint: '已导入条目'
+      key: 'PENDING',
+      label: '待处理',
+      icon: <ClockCircleOutlined />,
+      disabled: currentStatus === 'PENDING',
+      onClick: () => handleScheduleStatusChange(scheduleId, 'PENDING')
     },
     {
-      key: 'articles',
-      icon: <ReadOutlined />,
-      label: '文章',
-      value: stats.articleCount,
-      hint: '已发布博客'
+      key: 'IN_PROGRESS',
+      label: '进行中',
+      icon: <SyncOutlined />,
+      disabled: currentStatus === 'IN_PROGRESS',
+      onClick: () => handleScheduleStatusChange(scheduleId, 'IN_PROGRESS')
     },
     {
-      key: 'news',
-      icon: <NotificationOutlined />,
-      label: 'AI 资讯',
-      value: stats.newsCount,
-      hint: '聚合信息流'
+      key: 'COMPLETED',
+      label: '已完成',
+      icon: <CheckCircleOutlined />,
+      disabled: currentStatus === 'COMPLETED',
+      onClick: () => handleScheduleStatusChange(scheduleId, 'COMPLETED')
     }
   ];
 
+  const getStatusConfig = (status: string) => {
+    const configs: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
+      PENDING: { color: 'warning', icon: <ClockCircleOutlined />, label: '待处理' },
+      IN_PROGRESS: { color: 'processing', icon: <SyncOutlined spin />, label: '进行中' },
+      COMPLETED: { color: 'success', icon: <CheckCircleOutlined />, label: '已完成' }
+    };
+    return configs[status] || configs.PENDING;
+  };
+
+  const totalWeekTasks = stats.pending + stats.inProgress + stats.completed;
+  const completionRate = totalWeekTasks > 0 ? Math.round((stats.completed / totalWeekTasks) * 100) : 0;
+
+  const pendingToday = todaySchedules.filter(s => s.status !== 'COMPLETED');
+  const completedToday = todaySchedules.filter(s => s.status === 'COMPLETED');
+
   return (
-    <div className="home-page">
-      {/* Hero Section with Search */}
-      <section className="home-hero">
-        <div className="home-hero-content">
-          <Title level={1} className="home-hero-title">
-            个人科技圈博客
+    <div className="home-page" style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
+      {/* Header */}
+      <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+        <div>
+          <Title level={2} style={{ margin: 0 }}>
+            {dayjs().format('M月D日')} {['日', '一', '二', '三', '四', '五', '六'][dayjs().day()]}曜日
           </Title>
-          <Paragraph className="home-hero-subtitle">
-            以知识为底座，以 AI 为引擎。沉淀技术理解，连接语义检索与智能总结。
-          </Paragraph>
-
-          <div className="home-search-wrapper">
-            <Search
-              className="home-search"
-              placeholder="搜索知识库..."
-              enterButton={<><SearchOutlined /> 搜索</>}
-              size="large"
-              onSearch={handleSearch}
-              allowClear
-            />
-          </div>
-
-          <div className="home-status-chips">
-            <div className="status-chip">
-              <span className="status-chip-label">向量索引</span>
-              <span className="status-chip-value">已就绪</span>
-            </div>
-            <div className="status-chip">
-              <span className="status-chip-label">AI 协议</span>
-              <span className="status-chip-value">OpenAI 兼容</span>
-            </div>
-            <div className="status-chip">
-              <span className="status-chip-label">系统状态</span>
-              <span className="status-chip-value">
-                {stats.knowledgeCount + stats.articleCount > 0 ? '在线' : '待注入数据'}
-              </span>
-            </div>
-          </div>
+          <Text type="secondary">
+            {pendingToday.length > 0 
+              ? `还有 ${pendingToday.length} 项任务待完成` 
+              : completedToday.length > 0 
+                ? '所有任务已全部完成！' 
+                : '暂无任务安排'}
+          </Text>
         </div>
-      </section>
+        <Button 
+          type="primary" 
+          icon={<PlusOutlined />} 
+          size="large"
+          onClick={() => navigate('/schedule')}
+        >
+          新建日程
+        </Button>
+      </div>
 
-      {/* Quick Actions */}
-      <section className="home-section">
-        <Title level={4} className="section-title">快捷操作</Title>
-        <Row gutter={[16, 16]}>
-          {QUICK_ACTIONS.map(action => (
-            <Col xs={12} sm={12} md={6} key={action.key}>
-              <div
-                className="quick-action-card"
-                onClick={() => handleQuickAction(action.path)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && handleQuickAction(action.path)}
-              >
-                <div className="quick-action-icon" style={{ background: action.gradient }}>
-                  {action.icon}
-                </div>
-                <div className="quick-action-content">
-                  <div className="quick-action-title">{action.title}</div>
-                  <div className="quick-action-desc">{action.desc}</div>
-                </div>
-              </div>
-            </Col>
-          ))}
-        </Row>
-      </section>
-
-      {/* Dashboard Stats */}
-      <section className="home-section">
-        <Title level={4} className="section-title">知识概览</Title>
-        <Spin spinning={loading}>
-          <Row gutter={[16, 16]}>
-            {statsCards.map(stat => (
-              <Col xs={24} sm={8} key={stat.key}>
-                <div className="stats-card">
-                  <div className="stats-card-icon">{stat.icon}</div>
-                  <div className="stats-card-content">
-                    <div className="stats-card-value">{stat.value}</div>
-                    <div className="stats-card-label">{stat.label}</div>
-                    <div className="stats-card-hint">{stat.hint}</div>
-                  </div>
-                  <div className="stats-card-bar">
-                    <div
-                      className="stats-card-bar-fill"
-                      style={{ width: `${Math.min(100, Math.max(8, stat.value * 5))}%` }}
-                    />
-                  </div>
-                </div>
-              </Col>
-            ))}
-          </Row>
-        </Spin>
-      </section>
-
-      {/* Content Discovery */}
-      <section className="home-section">
+      <Spin spinning={loading}>
         <Row gutter={[24, 24]}>
-          {/* Recent Articles */}
-          <Col xs={24} lg={12}>
-            <div className="content-section">
-              <Title level={4} className="section-title">
-                <ReadOutlined /> 最近文章
-              </Title>
-              <Spin spinning={loading}>
-                {articles.length > 0 ? (
-                  <div className="content-list">
-                    {articles.slice(0, 4).map(article => (
-                      <ArticleCard key={article.id} article={article} />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="content-empty">
-                    <Text type="secondary">暂无文章，开始创作吧！</Text>
-                  </div>
-                )}
-              </Spin>
-            </div>
-          </Col>
-
-          {/* AI News */}
-          <Col xs={24} lg={12}>
-            <div className="content-section">
-              <Title level={4} className="section-title">
-                <NotificationOutlined /> 热门资讯
-              </Title>
-              <Spin spinning={loading}>
-                {aiNews.length > 0 ? (
-                  <div className="content-list">
-                    {aiNews.slice(0, 4).map(news => (
-                      <Card
-                        key={news.id}
-                        className="news-card glass-card"
-                        size="small"
-                        hoverable
+          {/* 左侧：今日任务 */}
+          <Col xs={24} lg={16}>
+            {/* 今日待办 */}
+            <Card 
+              className="glass-card" 
+              title={
+                <span>
+                  <FireOutlined style={{ color: '#ff6b6b', marginRight: 8 }} />
+                  待办任务
+                </span>
+              }
+              extra={
+                <Link to="/schedule" style={{ color: 'var(--primary)' }}>
+                  甘特图视图 <RightOutlined />
+                </Link>
+              }
+              style={{ marginBottom: 24 }}
+            >
+              {pendingToday.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {pendingToday.map(schedule => {
+                    const config = getStatusConfig(schedule.status);
+                    const priorityColors: Record<string, string> = {
+                      LOW: '#52c41a',
+                      MEDIUM: '#faad14', 
+                      HIGH: '#ff4d4f'
+                    };
+                    const priorityColor = priorityColors[schedule.priority || 'MEDIUM'] || '#faad14';
+                    return (
+                      <div 
+                        key={schedule.id} 
+                        style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: 12,
+                          padding: '12px 16px',
+                          background: 'var(--bg-2)',
+                          borderRadius: 8,
+                          borderLeft: `4px solid ${priorityColor}`,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
+                        className="task-item"
+                        onClick={() => navigate('/schedule')}
                       >
-                        <div className="news-card-title">{news.title}</div>
-                        <Paragraph ellipsis={{ rows: 2 }} className="news-card-summary">
-                          {news.summary || '暂无摘要'}
-                        </Paragraph>
-                        <div className="news-card-meta">
-                          {news.sourceName && <Text type="secondary">{news.sourceName}</Text>}
-                          {news.sourceUrl && (
-                            <a href={news.sourceUrl} target="_blank" rel="noreferrer">
-                              阅读原文
-                            </a>
+                        <Dropdown
+                          menu={{ items: getStatusMenuItems(schedule.id, schedule.status) }}
+                          trigger={['click']}
+                        >
+                          <Tag
+                            color={config.color}
+                            icon={config.icon}
+                            style={{ cursor: 'pointer', margin: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {config.label}
+                          </Tag>
+                        </Dropdown>
+                        <div style={{ flex: 1, overflow: 'hidden' }}>
+                          <Text style={{ fontSize: 15 }} ellipsis>{schedule.title}</Text>
+                          {schedule.description && (
+                            <div>
+                              <Text type="secondary" style={{ fontSize: 12 }} ellipsis>
+                                {schedule.description}
+                              </Text>
+                            </div>
                           )}
                         </div>
-                      </Card>
-                    ))}
+                        {schedule.endDate && (
+                          <Tag color="blue" style={{ margin: 0 }}>
+                            {schedule.endDate}
+                          </Tag>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                  <TrophyOutlined style={{ fontSize: 48, color: 'var(--primary)', marginBottom: 16 }} />
+                  <div>
+                    <Text type="secondary">
+                      {completedToday.length > 0 
+                        ? `太棒了！${completedToday.length} 项任务已全部完成` 
+                        : '暂无待办任务，享受悠闲时光吧'}
+                    </Text>
                   </div>
-                ) : (
-                  <div className="content-empty">
-                    <Text type="secondary">暂无资讯，导入 RSS 开始聚合吧！</Text>
+                </div>
+              )}
+            </Card>
+
+            {/* 已完成任务 */}
+            {completedToday.length > 0 && (
+              <Card 
+                className="glass-card" 
+                title={
+                  <span>
+                    <CheckCircleOutlined style={{ color: '#52c41a', marginRight: 8 }} />
+                    今日已完成 ({completedToday.length})
+                  </span>
+                }
+                style={{ marginBottom: 24 }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {completedToday.map(schedule => (
+                    <div 
+                      key={schedule.id} 
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 12,
+                        padding: '8px 12px',
+                        opacity: 0.7
+                      }}
+                    >
+                      <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                      <Text delete style={{ flex: 1 }}>{schedule.title}</Text>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+          </Col>
+
+          {/* 右侧：统计和项目 */}
+          <Col xs={24} lg={8}>
+            {/* 本周统计 */}
+            <Card className="glass-card" style={{ marginBottom: 24 }}>
+              <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                <Progress
+                  type="circle"
+                  percent={completionRate}
+                  strokeColor="var(--primary)"
+                  trailColor="var(--bg-2)"
+                  format={() => (
+                    <div>
+                      <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--text)' }}>
+                        {completionRate}%
+                      </div>
+                      <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>本周完成率</div>
+                    </div>
+                  )}
+                />
+              </div>
+              <Row gutter={[16, 16]}>
+                <Col span={8}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 24, fontWeight: 700, color: '#faad14' }}>{stats.pending}</div>
+                    <Text type="secondary" style={{ fontSize: 12 }}>待处理</Text>
                   </div>
-                )}
-              </Spin>
+                </Col>
+                <Col span={8}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 24, fontWeight: 700, color: '#1890ff' }}>{stats.inProgress}</div>
+                    <Text type="secondary" style={{ fontSize: 12 }}>进行中</Text>
+                  </div>
+                </Col>
+                <Col span={8}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 24, fontWeight: 700, color: '#52c41a' }}>{stats.completed}</div>
+                    <Text type="secondary" style={{ fontSize: 12 }}>已完成</Text>
+                  </div>
+                </Col>
+              </Row>
+            </Card>
+
+            {/* 进行中的项目 */}
+            <Card 
+              className="glass-card"
+              title={
+                <span>
+                  <ProjectOutlined style={{ marginRight: 8 }} />
+                  进行中的项目
+                </span>
+              }
+              extra={
+                <Link to="/project" style={{ color: 'var(--primary)' }}>
+                  全部 <RightOutlined />
+                </Link>
+              }
+            >
+              {activeProjects.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {activeProjects.slice(0, 5).map(project => (
+                    <div 
+                      key={project.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        padding: '10px 12px',
+                        background: 'var(--bg-2)',
+                        borderRadius: 8,
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => navigate('/project')}
+                    >
+                      <div 
+                        style={{ 
+                          width: 8, 
+                          height: 8, 
+                          borderRadius: '50%', 
+                          background: project.color || 'var(--primary)',
+                          flexShrink: 0
+                        }} 
+                      />
+                      <Text style={{ flex: 1 }} ellipsis>{project.name}</Text>
+                      {project.endDate && (
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                          {project.endDate}
+                        </Text>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '20px' }}>
+                  <Text type="secondary">暂无进行中的项目</Text>
+                </div>
+              )}
+            </Card>
+
+            {/* 快捷入口 */}
+            <div style={{ marginTop: 24, display: 'flex', gap: 12 }}>
+              <Button 
+                block 
+                icon={<CalendarOutlined />}
+                onClick={() => navigate('/schedule')}
+              >
+                日程管理
+              </Button>
+              <Button 
+                block 
+                icon={<ProjectOutlined />}
+                onClick={() => navigate('/project')}
+              >
+                项目管理
+              </Button>
             </div>
           </Col>
         </Row>
-      </section>
+      </Spin>
     </div>
   );
 };
