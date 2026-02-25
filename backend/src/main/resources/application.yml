@@ -5,7 +5,7 @@ spring:
   datasource:
     url: jdbc:postgresql://${DB_HOST:47.112.3.210}:5433/${DB_NAME:blog}
     username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:123456}
+    password: ${DB_PASSWORD:KDadm!@#2022}
     driver-class-name: org.postgresql.Driver
 
   jpa:
