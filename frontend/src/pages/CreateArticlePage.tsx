@@ -1,6 +1,6 @@
 ﻿import React, { useState } from 'react';
 import { Button, Card, Form, Input, Select, Space, Switch, Typography, message } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { articleService, type ArticleCreatePayload } from '../services';
 
 const { Title, Paragraph, Text } = Typography;
@@ -24,6 +24,8 @@ const CreateArticlePage: React.FC = () => {
   const [form] = Form.useForm<ArticleCreatePayload>();
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const presetCategory = searchParams.get('category') ?? undefined;
 
   const handleFinish = async (values: ArticleCreatePayload) => {
     setSubmitting(true);
@@ -31,7 +33,8 @@ const CreateArticlePage: React.FC = () => {
       const resp = await articleService.createManual<CreatedArticle>(values);
       const article = resp.data;
       message.success(`创建成功：${article?.title ?? '未命名文章'}`);
-      navigate('/');
+      const shouldGoNotes = (values.category ?? presetCategory) === 'notes';
+      navigate(shouldGoNotes ? '/notes' : '/');
     } catch (error: any) {
       message.error(error.message || '创建失败');
     } finally {
@@ -43,11 +46,10 @@ const CreateArticlePage: React.FC = () => {
     <div className="create-article-page">
       <section className="page-hero">
         <Title level={2} className="hero-title">
-          创建笔记
+          知识条目管理
         </Title>
         <Paragraph className="hero-subtitle">
-          手动撰写一篇结构清晰、可检索的技术文章。系统会在需要时自动生成摘要，
-          并可选择立即发布。
+          手动撰写一篇结构清晰、可检索的知识条目。支持分类、自动摘要和发布状态管理。
         </Paragraph>
         <div className="hero-chips">
           <div className="status-chip">
@@ -65,7 +67,7 @@ const CreateArticlePage: React.FC = () => {
         <Form
           form={form}
           layout="vertical"
-          initialValues={{ publish: true }}
+          initialValues={{ publish: true, category: presetCategory }}
           onFinish={handleFinish}
         >
           <Form.Item
@@ -116,12 +118,12 @@ const CreateArticlePage: React.FC = () => {
             <Form.Item name="publish" valuePropName="checked" noStyle>
               <Switch checkedChildren="发布" unCheckedChildren="草稿" />
             </Form.Item>
-            <Text type="secondary">提交后可在首页查看</Text>
+            <Text type="secondary">提交后可在对应列表查看</Text>
           </div>
 
           <Form.Item style={{ marginTop: 18, marginBottom: 0 }}>
             <Button type="primary" htmlType="submit" loading={submitting}>
-              生成文章
+              创建条目
             </Button>
           </Form.Item>
         </Form>

@@ -101,13 +101,29 @@ const ProjectPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (project: ProjectWithSchedules) => {
     try {
-      await projectService.delete(id);
+      const activeSchedulesResp = await scheduleService.getActiveByProject(project.id);
+      const activeSchedules = activeSchedulesResp.data ?? [];
+
+      if (activeSchedules.length > 0) {
+        Modal.warning({
+          title: <span style={{ color: 'var(--text)' }}>无法删除项目</span>,
+          content: (
+            <div style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+              项目“{project.name}”下仍有 {activeSchedules.length} 条生效日程，请先处理或解除关联后再删除。
+            </div>
+          ),
+          okText: '我知道了'
+        });
+        return;
+      }
+
+      await projectService.delete(project.id);
       message.success('项目已删除');
       void loadProjects();
-    } catch {
-      message.error('删除失败');
+    } catch (error: any) {
+      message.error(error.message || '删除失败');
     }
   };
 
@@ -166,6 +182,7 @@ const ProjectPage: React.FC = () => {
   const renderProjectItem = (project: ProjectWithSchedules) => {
     const config = statusConfig[project.status] || statusConfig.ACTIVE;
     const progress = getProgress(project.schedules);
+    const progressColor = project.color || '#00C9A7';
     const totalTasks = project.schedules?.length ?? 0;
     const completedTasks = project.schedules?.filter(s => s.status === 'COMPLETED').length ?? 0;
 
@@ -192,7 +209,7 @@ const ProjectPage: React.FC = () => {
             type="text"
             danger
             icon={<DeleteOutlined />}
-            onClick={() => handleDelete(project.id)}
+            onClick={() => handleDelete(project)}
           />
         ]}
       >
@@ -232,12 +249,19 @@ const ProjectPage: React.FC = () => {
                 </Text>
               </div>
               {totalTasks > 0 && (
-                <Progress 
-                  percent={progress} 
-                  size="small" 
-                  strokeColor={project.color}
-                  style={{ marginTop: 8, maxWidth: 300 }}
-                />
+                <div style={{ marginTop: 10, maxWidth: 340 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <Text style={{ fontSize: 12, color: 'var(--text-secondary)' }}>完成进度</Text>
+                    <Text style={{ fontSize: 12, color: 'var(--text)' }}>{progress}%</Text>
+                  </div>
+                  <Progress
+                    percent={progress}
+                    size="small"
+                    showInfo={false}
+                    strokeColor={progressColor}
+                    trailColor="rgba(90, 122, 140, 0.35)"
+                  />
+                </div>
               )}
             </div>
           }

@@ -3,9 +3,9 @@ spring:
     name: blog-backend
 
   datasource:
-    url: jdbc:postgresql://${DB_HOST:47.112.3.210}:5433/${DB_NAME:blog}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:blog}
     username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:KDadm!@#2022}
+    password: ${DB_PASSWORD:}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -28,14 +28,14 @@ spring:
       chat: openai
       embedding: openai
     openai:
-      api-key: ${OPENAI_API_KEY:sk-delncxvjhrcgiyxbnkgvaiutkcigulkzydetopczksoqnqpm}
+      api-key: ${OPENAI_API_KEY:}
       base-url: ${OPENAI_BASE_URL:https://api.siliconflow.cn}
       chat:
         options:
           model: ${OPENAI_CHAT_MODEL:Qwen/Qwen3-8B}
           temperature: 0.2
       embedding:
-        api-key: ${OPENAI_API_KEY:sk-delncxvjhrcgiyxbnkgvaiutkcigulkzydetopczksoqnqpm}
+        api-key: ${OPENAI_API_KEY:}
         base-url: ${OPENAI_EMBEDDING_BASE_URL:https://api.siliconflow.cn}
         options:
           model: ${OPENAI_EMBEDDING_MODEL:BAAI/bge-large-zh-v1.5}
@@ -43,10 +43,10 @@ spring:
           # BAAI/bge-large-zh-v1.5 outputs 1024 dimensions natively
   data:
     redis:
-      host: ${REDIS_HOST:47.112.3.210}
-      port: 6379
-      username: root
-      password: 123456
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      username: ${REDIS_USERNAME:}
+      password: ${REDIS_PASSWORD:}
 
 server:
   port: ${SERVER_PORT:8080}

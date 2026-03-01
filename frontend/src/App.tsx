@@ -120,15 +120,20 @@ const AppContent: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const isKnowledgeRoute = [
+    '/search',
+    '/import',
+    '/rss',
+    '/chat',
+    '/create',
+    '/notes'
+  ].some(path => location.pathname.startsWith(path));
+
   const selectedKey =
-    location.pathname.startsWith('/search') ? '/search' :
-      location.pathname.startsWith('/import') ? '/import' :
-        location.pathname.startsWith('/rss') ? '/rss' :
-          location.pathname.startsWith('/chat') ? '/chat' :
-            location.pathname.startsWith('/create') ? '/create' :
-              location.pathname.startsWith('/schedule') ? '/schedule' :
-                location.pathname.startsWith('/project') ? '/project' :
-                  location.pathname.startsWith('/login') ? '/login' : '/';
+    location.pathname.startsWith('/schedule') ? '/schedule' :
+      location.pathname.startsWith('/project') ? '/project' :
+        isKnowledgeRoute ? '/knowledge' : '/';
+  const selectedKeys = location.pathname.startsWith('/login') ? [] : [selectedKey];
 
   useEffect(() => {
     const root = document.documentElement;
@@ -291,16 +296,31 @@ const AppContent: React.FC = () => {
             className="app-menu"
             theme="dark"
             mode="horizontal"
-            selectedKeys={[selectedKey]}
+            selectedKeys={selectedKeys}
             items={[
-              { key: '/', label: <Link to="/">首页</Link> },
-              { key: '/schedule', label: <Link to="/schedule" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>日程{urgentCount > 0 && <Badge count={urgentCount} size="small" />}</Link> },
-              { key: '/project', label: <Link to="/project">项目</Link> },
-              { key: '/search', label: <Link to="/search">知识检索</Link> },
-              { key: '/import', label: <Link to="/import">文档导入</Link> },
-              { key: '/rss', label: <Link to="/rss">RSS导入</Link> },
-              { key: '/chat', label: <Link to="/chat">知识对话</Link> },
-              { key: '/create', label: <Link to="/create">知识管理</Link> }, { key: '/notes', label: <Link to="/notes">笔记</Link> }
+              { key: '/', label: <Link to="/">仪表盘</Link> },
+              {
+                key: '/schedule',
+                label: (
+                  <Link to="/schedule" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    任务日程
+                    {urgentCount > 0 && <Badge count={urgentCount} size="small" />}
+                  </Link>
+                )
+              },
+              { key: '/project', label: <Link to="/project">项目管理</Link> },
+              {
+                key: '/knowledge',
+                label: '个人知识库',
+                children: [
+                  { key: '/search', label: <Link to="/search">知识检索</Link> },
+                  { key: '/import', label: <Link to="/import">文档导入</Link> },
+                  { key: '/rss', label: <Link to="/rss">RSS导入</Link> },
+                  { key: '/chat', label: <Link to="/chat">知识对话</Link> },
+                  { key: '/create', label: <Link to="/create">知识条目管理</Link> },
+                  { key: '/notes', label: <Link to="/notes">笔记</Link> }
+                ]
+              }
             ]}
           />
           <HeaderAuthControls />
@@ -316,8 +336,7 @@ const AppContent: React.FC = () => {
             <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
             <Route path="/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
             <Route path="/rss" element={<ProtectedRoute><RssImportPage /></ProtectedRoute>} />
-            <Route path="/notes" element={<NotesPage />} />
-            <Route path="/notes" element={<NotesPage />} />
+            <Route path="/notes" element={<ProtectedRoute><NotesPage /></ProtectedRoute>} />
             <Route path="/create" element={<ProtectedRoute><CreateArticlePage /></ProtectedRoute>} />
           </Routes>
         </Content>
