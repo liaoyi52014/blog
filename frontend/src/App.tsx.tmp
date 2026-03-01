@@ -1,4 +1,4 @@
-ï»¿import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ConfigProvider, Layout, Menu, Button, Dropdown, Badge, theme, message } from 'antd';
 import { Link, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { UserOutlined, LogoutOutlined, LoginOutlined } from '@ant-design/icons';
@@ -7,11 +7,10 @@ import { scheduleService } from './services';
 import dayjs from 'dayjs';
 import Home from './pages/Home';
 import SearchPage from './pages/SearchPage';
+import ImportPage from './pages/ImportPage';
 import RssImportPage from './pages/RssImportPage';
 import ChatPage from './pages/ChatPage';
-import CreateArticlePage from './pages/CreateArticlePage';
-import NotesPage from './pages/NotesPage';
-import ImportPage from './pages/ImportPage';
+import KnowledgePage from './pages/KnowledgePage';
 import AuthPage from './pages/AuthPage';
 import SchedulePage from './pages/SchedulePage';
 import ProjectPage from './pages/ProjectPage';
@@ -34,13 +33,13 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
-      message.warning('è¯·å…ˆç™»å½•');
+      message.warning('ÇëÏÈµÇÂ¼');
       navigate('/login');
     }
   }, [isLoggedIn, isLoading, navigate]);
 
   if (isLoading) {
-    return <div className="auth-loading">åŠ è½½ä¸­...</div>;
+    return <div className="auth-loading">¼ÓÔØÖĞ...</div>;
   }
 
   return isLoggedIn ? <>{children}</> : null;
@@ -53,7 +52,7 @@ const HeaderAuthControls: React.FC = () => {
 
   const handleLogout = async () => {
     await logout();
-    message.success('å·²é€€å‡ºç™»å½•');
+    message.success('ÒÑÍË³öµÇÂ¼');
     navigate('/');
   };
 
@@ -65,7 +64,7 @@ const HeaderAuthControls: React.FC = () => {
         onClick={() => navigate('/login')}
         className="header-auth-btn"
       >
-        ç™»å½•
+        µÇÂ¼
       </Button>
     );
   }
@@ -73,14 +72,14 @@ const HeaderAuthControls: React.FC = () => {
   const menuItems = [
     {
       key: 'user',
-      label: <span>å½“å‰ç”¨æˆ·: {user?.username}</span>,
+      label: <span>µ±Ç°ÓÃ»§: {user?.username}</span>,
       disabled: true
     },
     { type: 'divider' as const },
     {
       key: 'logout',
       icon: <LogoutOutlined />,
-      label: 'é€€å‡ºç™»å½•',
+      label: 'ÍË³öµÇÂ¼',
       onClick: handleLogout
     }
   ];
@@ -100,7 +99,7 @@ const AppContent: React.FC = () => {
   const particlesRef = useRef<HTMLCanvasElement | null>(null);
   const [urgentCount, setUrgentCount] = useState(0);
 
-  // åŠ è½½ç´§æ€¥ä»»åŠ¡æ•°é‡ï¼ˆåˆ°æœŸ/è¿‡æœŸï¼‰
+  // ¼ÓÔØ½ô¼±ÈÎÎñÊıÁ¿£¨µ½ÆÚ/¹ıÆÚ£©
   useEffect(() => {
     const loadUrgentCount = async () => {
       try {
@@ -293,14 +292,14 @@ const AppContent: React.FC = () => {
             mode="horizontal"
             selectedKeys={[selectedKey]}
             items={[
-              { key: '/', label: <Link to="/">é¦–é¡µ</Link> },
-              { key: '/schedule', label: <Link to="/schedule" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>æ—¥ç¨‹{urgentCount > 0 && <Badge count={urgentCount} size="small" />}</Link> },
-              { key: '/project', label: <Link to="/project">é¡¹ç›®</Link> },
-              { key: '/search', label: <Link to="/search">çŸ¥è¯†æ£€ç´¢</Link> },
-              { key: '/import', label: <Link to="/import">æ–‡æ¡£å¯¼å…¥</Link> },
-              { key: '/rss', label: <Link to="/rss">RSSå¯¼å…¥</Link> },
-              { key: '/chat', label: <Link to="/chat">çŸ¥è¯†å¯¹è¯</Link> },
-              { key: '/create', label: <Link to="/create">çŸ¥è¯†ç®¡ç†</Link> }, { key: '/notes', label: <Link to="/notes">ç¬”è®°</Link> }
+              { key: '/', label: <Link to="/">Ê×Ò³</Link> },
+              { key: '/schedule', label: <Link to="/schedule" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>ÈÕ³Ì{urgentCount > 0 && <Badge count={urgentCount} size="small" />}</Link> },
+              { key: '/project', label: <Link to="/project">ÏîÄ¿</Link> },
+              { key: '/search', label: <Link to="/search">ÖªÊ¶¼ìË÷</Link> },
+              { key: '/import', label: <Link to="/import">ÎÄµµµ¼Èë</Link> },
+              { key: '/rss', label: <Link to="/rss">RSSµ¼Èë</Link> },
+              { key: '/chat', label: <Link to="/chat">ÖªÊ¶¶Ô»°</Link> },
+              { key: '/create', label: <Link to="/create">´´½¨±Ê¼Ç</Link> }
             ]}
           />
           <HeaderAuthControls />
@@ -316,13 +315,11 @@ const AppContent: React.FC = () => {
             <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
             <Route path="/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
             <Route path="/rss" element={<ProtectedRoute><RssImportPage /></ProtectedRoute>} />
-            <Route path="/notes" element={<NotesPage />} />
-            <Route path="/notes" element={<NotesPage />} />
-            <Route path="/create" element={<ProtectedRoute><CreateArticlePage /></ProtectedRoute>} />
+            <Route path="/create" element={<ProtectedRoute><KnowledgePage /></ProtectedRoute>} />
           </Routes>
         </Content>
         <Footer className="app-footer">
-          DayNote Â© 2026
+          DayNote ? 2026
         </Footer>
       </Layout>
     </ConfigProvider>
@@ -338,3 +335,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+
