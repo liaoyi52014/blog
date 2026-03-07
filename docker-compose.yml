@@ -15,6 +15,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    networks:
+      - blog-network
 
   redis:
     image: redis:7-alpine
@@ -24,18 +26,27 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_pass}
     ports:
       - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
     healthcheck:
       test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD}\" ping | grep PONG"]
       interval: 10s
       timeout: 5s
       retries: 10
+    networks:
+      - blog-network
 
   backend:
-    image: ${BACKEND_IMAGE:-blog/backend:latest}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     restart: unless-stopped
     ports:
       - "${BACKEND_PORT:-8080}:8080"
+    env_file:
+      - .env
     environment:
+      SPRING_PROFILES_ACTIVE: prod
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${POSTGRES_DB:-blog}
@@ -45,23 +56,35 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_pass}
       REDIS_USERNAME: ${REDIS_USERNAME:-}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
-      OPENAI_CHAT_MODEL: ${OPENAI_CHAT_MODEL:-Qwen/Qwen3-8B}
-      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-BAAI/bge-large-zh-v1.5}
+      SPRING_AI_OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SPRING_AI_OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.siliconflow.cn}
+      SPRING_AI_OPENAI_CHAT_OPTIONS_MODEL: ${OPENAI_CHAT_MODEL:-Qwen/Qwen3-8B}
+      SPRING_AI_OPENAI_EMBEDDING_OPTIONS_MODEL: ${OPENAI_EMBEDDING_MODEL:-BAAI/bge-large-zh-v1.5}
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-key-change-in-production-32chars}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - blog-network
 
   frontend:
-    image: ${FRONTEND_IMAGE:-blog/frontend:latest}
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "${FRONTEND_PORT:-80}:80"
+      - "${FRONTEND_PORT:-3000}:80"
     depends_on:
       - backend
+    networks:
+      - blog-network
 
 volumes:
   postgres_data:
+  redis_data:
+
+networks:
+  blog-network:
+    driver: bridge
